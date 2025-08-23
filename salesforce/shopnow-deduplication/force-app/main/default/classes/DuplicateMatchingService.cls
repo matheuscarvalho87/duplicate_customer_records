@@ -29,10 +29,10 @@ public with sharing class DuplicateMatchingService {
             for (Integer i=0; i<grp.size(); i++) {
                 for (Integer j=i+1; j<grp.size(); j++) {
                     Customer__c a = grp[i], b = grp[j];
-                    Integer score = 100;
+                    Integer score = DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE;
                     String key = pairKey(a.Id, b.Id);
                     if (!seenPairs.contains(key)) {
-                        out.add(createDuplicateRecord(a, b, score));
+                        out.add(createDuplicateRecord(a, b, score, DuplicateMatchConstants.MATCH_TYPE_EMAIL));
                         seenPairs.add(key);
                     }
                 }
@@ -53,7 +53,7 @@ public with sharing class DuplicateMatchingService {
                     if (score > 0) {
                         String key = pairKey(a.Id, b.Id);
                         if (!seenPairs.contains(key)) {
-                            out.add(createDuplicateRecord(a, b, score));
+                            out.add(createDuplicateRecord(a, b, score, resolveMatchType(score)));
                             seenPairs.add(key);
                         }
                     }
@@ -66,30 +66,31 @@ public with sharing class DuplicateMatchingService {
 
 
     public static Integer calculateMatchScore(Customer__c a, Customer__c b) {
-        if (a == null || b == null) return 0;
+        if (a == null || b == null) return DuplicateMatchConstants.NO_MATCH_SCORE;
 
         if (!String.isBlank(a.Email__c) && !String.isBlank(b.Email__c) &&
             a.Email__c.trim().toLowerCase() == b.Email__c.trim().toLowerCase()) {
-            return 100;
+            return DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE;
+
         }
 
         if (!FuzzyMatchingUtil.phoneNumberMatch(a.Phone__c, b.Phone__c)) {
-            return 0;
+            return DuplicateMatchConstants.NO_MATCH_SCORE;
         }
 
         if (fuzzyMatch(a.FirstName__c, b.FirstName__c)) {
-            return 70;
+            return DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE;
         }
 
         if (!String.isBlank(a.LastName__c) && !String.isBlank(b.LastName__c)) {
             String la = FuzzyMatchingUtil.normalizeString(a.LastName__c);
             String lb = FuzzyMatchingUtil.normalizeString(b.LastName__c);
             if (la == lb) {
-                return 50;
+                return DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE;
             }
         }
 
-        return 0;
+        return DuplicateMatchConstants.NO_MATCH_SCORE;
     }
 
     public static Boolean fuzzyMatch(String s1, String s2) {
@@ -99,10 +100,10 @@ public with sharing class DuplicateMatchingService {
         if (a == b) return true;
         
         Decimal sim = FuzzyMatchingUtil.calculateSimilarity(a, b);
-        if (sim >= 0.750) return true;
+        if (sim >= DuplicateMatchConstants.FUZZY_MATCH_THRESHOLD) return true;
 
         Integer dist = levenshteinDistance(a, b);
-        if (dist <= 1) return true;
+        if (dist <= DuplicateMatchConstants.LEVENSHTEIN_MAX_DISTANCE) return true;
 
         if (a.length() > 0 && b.length() > 0 && a.substring(0,1) == b.substring(0,1)) {
             Integer diff = Math.abs(a.length() - b.length());
@@ -113,46 +114,52 @@ public with sharing class DuplicateMatchingService {
 
     // Big O(n*m) inMemory O(min(n,m))
     public static Integer levenshteinDistance(String s1, String s2) {
-        if (s1 == null) s1 = '';
-        if (s2 == null) s2 = '';
-        Integer n = s1.length();
-        Integer m = s2.length();
-        if (n == 0) return m;
-        if (m == 0) return n;
+    if (s1 == null) s1 = '';
+    if (s2 == null) s2 = '';
+    Integer n = s1.length();
+    Integer m = s2.length();
+    if (n == 0) return m;
+    if (m == 0) return n;
 
-        List<Integer> prev = new List<Integer>();
-        List<Integer> curr = new List<Integer>();
-        for (Integer j=0; j<=m; j++) prev.add(j);
-
-        for (Integer i=1; i<=n; i++) {
-            curr.clear();
-            curr.add(i);
-            for (Integer j=1; j<=m; j++) {
-                Integer cost = (s1.substring(i-1, i) == s2.substring(j-1, j)) ? 0 : 1;
-                Integer ins = curr.get(j-1) + 1;
-                Integer del = prev.get(j) + 1;        
-                Integer sub = prev.get(j-1) + cost;    
-                curr.add(Math.min(ins, Math.min(del, sub)));
-            }
-            prev = new List<Integer>(curr);
-        }
-        return prev.get(m);
+    // Early exit: diferença muito grande já estoura limite configurado
+    if (Math.abs(n - m) > DuplicateMatchConstants.LEVENSHTEIN_MAX_DISTANCE) {
+        return Math.abs(n - m);
     }
 
-    public static Duplicate_Match__c createDuplicateRecord(Customer__c a, Customer__c b, Integer score) {
-        String typeLabel;
-        if (score == 100) typeLabel = 'Exact Email';
-        else if (score == 70) typeLabel = 'Fuzzy Name + Same Phone';
-        else if (score == 50) typeLabel = 'Same Last Name + Same Phone';
-        else typeLabel = 'No Rule';
+    List<Integer> prev = new List<Integer>();
+    List<Integer> curr = new List<Integer>();
+    for (Integer j=0; j<=m; j++) prev.add(j);
 
+    for (Integer i=1; i<=n; i++) {
+        curr.clear();
+        curr.add(i);
+        for (Integer j=1; j<=m; j++) {
+            Integer cost = (s1.substring(i-1, i) == s2.substring(j-1, j)) ? 0 : 1;
+            Integer ins = curr.get(j-1) + 1;
+            Integer del = prev.get(j) + 1;
+            Integer sub = prev.get(j-1) + cost;
+            curr.add(Math.min(ins, Math.min(del, sub)));
+        }
+        prev = new List<Integer>(curr);
+    }
+    return prev.get(m);
+}
+
+    public static Duplicate_Match__c createDuplicateRecord(Customer__c a, Customer__c b, Integer score, String typeLabel) {
         return new Duplicate_Match__c(
             Customer_A__c = a != null ? a.Id : null,
             Customer_B__c = b != null ? b.Id : null,
             Match_Score__c = score,
             Match_Type__c = typeLabel,
-            Status__c = 'Pending Review'
+            Status__c = DuplicateMatchConstants.STATUS_PENDING
         );
+    }
+
+    private static String resolveMatchType(Integer score) {
+        if (score == DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE) return DuplicateMatchConstants.MATCH_TYPE_EMAIL;
+        if (score == DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE) return DuplicateMatchConstants.MATCH_TYPE_FUZZY_NAME_PHONE;
+        if (score == DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE) return DuplicateMatchConstants.MATCH_TYPE_LASTNAME_PHONE;
+        return 'No Rule';
     }
 
     private static String pairKey(Id a, Id b) {
