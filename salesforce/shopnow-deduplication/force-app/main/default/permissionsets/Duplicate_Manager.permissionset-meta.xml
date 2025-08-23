@@ -16,7 +16,6 @@
         <field>Customer__c.ExternalId__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <!-- Removidos campos obrigatórios de Duplicate_Match__c: Customer_A__c, Customer_B__c, Match_Score__c -->
     <fieldPermissions>
         <editable>true</editable>
         <field>Duplicate_Match__c.Status__c</field>
