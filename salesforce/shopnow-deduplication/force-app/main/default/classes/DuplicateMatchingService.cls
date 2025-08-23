@@ -114,36 +114,36 @@ public with sharing class DuplicateMatchingService {
 
     // Big O(n*m) inMemory O(min(n,m))
     public static Integer levenshteinDistance(String s1, String s2) {
-    if (s1 == null) s1 = '';
-    if (s2 == null) s2 = '';
-    Integer n = s1.length();
-    Integer m = s2.length();
-    if (n == 0) return m;
-    if (m == 0) return n;
+        if (s1 == null) s1 = '';
+        if (s2 == null) s2 = '';
+        Integer n = s1.length();
+        Integer m = s2.length();
+        if (n == 0) return m;
+        if (m == 0) return n;
 
-    // Early exit: diferença muito grande já estoura limite configurado
-    if (Math.abs(n - m) > DuplicateMatchConstants.LEVENSHTEIN_MAX_DISTANCE) {
-        return Math.abs(n - m);
-    }
-
-    List<Integer> prev = new List<Integer>();
-    List<Integer> curr = new List<Integer>();
-    for (Integer j=0; j<=m; j++) prev.add(j);
-
-    for (Integer i=1; i<=n; i++) {
-        curr.clear();
-        curr.add(i);
-        for (Integer j=1; j<=m; j++) {
-            Integer cost = (s1.substring(i-1, i) == s2.substring(j-1, j)) ? 0 : 1;
-            Integer ins = curr.get(j-1) + 1;
-            Integer del = prev.get(j) + 1;
-            Integer sub = prev.get(j-1) + cost;
-            curr.add(Math.min(ins, Math.min(del, sub)));
+        // Early exit: big difference in length and avoid heavy computation
+        if (Math.abs(n - m) > DuplicateMatchConstants.LEVENSHTEIN_MAX_DISTANCE) {
+            return Math.abs(n - m);
         }
-        prev = new List<Integer>(curr);
+
+        List<Integer> prev = new List<Integer>();
+        List<Integer> curr = new List<Integer>();
+        for (Integer j=0; j<=m; j++) prev.add(j);
+
+        for (Integer i=1; i<=n; i++) {
+            curr.clear();
+            curr.add(i);
+            for (Integer j=1; j<=m; j++) {
+                Integer cost = (s1.substring(i-1, i) == s2.substring(j-1, j)) ? 0 : 1;
+                Integer ins = curr.get(j-1) + 1;
+                Integer del = prev.get(j) + 1;
+                Integer sub = prev.get(j-1) + cost;
+                curr.add(Math.min(ins, Math.min(del, sub)));
+            }
+            prev = new List<Integer>(curr);
+        }
+        return prev.get(m);
     }
-    return prev.get(m);
-}
 
     public static Duplicate_Match__c createDuplicateRecord(Customer__c a, Customer__c b, Integer score, String typeLabel) {
         return new Duplicate_Match__c(
