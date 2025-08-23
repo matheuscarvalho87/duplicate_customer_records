@@ -112,7 +112,7 @@ public with sharing class DuplicateMatchingService {
         return false;
     }
 
-    // Big O(n*m) inMemory O(min(n,m))
+    // Big O(n*m) time and O(min(n,m)) space
     public static Integer levenshteinDistance(String s1, String s2) {
         if (s1 == null) s1 = '';
         if (s2 == null) s2 = '';
