@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Different_Customers</fullName>
+    <active>true</active>
+    <description>Ensures Customer A and Customer B are different</description>
+    <errorConditionFormula>Customer_A__c = Customer_B__c</errorConditionFormula>
+    <errorMessage>Customer A and Customer B must be different records</errorMessage>
+</ValidationRule>

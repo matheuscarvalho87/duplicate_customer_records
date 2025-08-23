@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Customer_B__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description>Second customer in the duplicate pair</description>
+    <externalId>false</externalId>
+    <label>Customer B</label>
+    <referenceTo>Customer__c</referenceTo>
+    <relationshipLabel>Duplicate Matches (B)</relationshipLabel>
+    <relationshipName>Duplicate_Matches_B</relationshipName>
+    <required>true</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>
