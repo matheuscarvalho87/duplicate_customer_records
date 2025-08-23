@@ -8,5 +8,5 @@
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Email</type>
-    <unique>true</unique>
+    <unique>false</unique>
 </CustomField>
