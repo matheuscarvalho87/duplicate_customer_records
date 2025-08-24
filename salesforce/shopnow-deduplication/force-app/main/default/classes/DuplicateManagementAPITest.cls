@@ -6,7 +6,7 @@ private class DuplicateManagementAPITest {
             Alias = 'stdusr',
             Email = 'stdusr@example.com',
             EmailEncodingKey = 'UTF-8',
-            LastName = 'Std'
+            LastName = 'Std',
             LanguageLocaleKey = 'en_US',
             LocaleSidKey = 'en_US',
             TimeZoneSidKey = 'America/Sao_Paulo',
