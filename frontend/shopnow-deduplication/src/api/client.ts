@@ -1,8 +1,16 @@
 import axios, { AxiosError, AxiosHeaders } from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+
 import { apiBase } from "../config/env";
 import { authService, authStore } from "../services/authService";
 import { logger } from "../utils/logger";
+
+function ensureAxiosHeaders(
+  h?: InternalAxiosRequestConfig["headers"],
+): AxiosHeaders {
+  return h instanceof AxiosHeaders ? h : AxiosHeaders.from(h ?? {});
+}
+
 
 let isRefreshing = false;
 let pendingQueue: Array<(token: string | null) => void> = [];
@@ -20,19 +28,21 @@ export const http: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   logger.debug("HTTP →", config.method?.toUpperCase(), config.baseURL, config.url, {
     params: config.params,
     data: config.data,
   });
 
+  config.headers = ensureAxiosHeaders(config.headers);
+
   const token = authStore.accessToken;
   if (token) {
-    (config.headers ??= new AxiosHeaders()).set("Authorization", `Bearer ${token}`);
-     config.headers.set("Accept", "application/json");
-     config.headers.set("Content-Type", "application/json");
+    (config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
   }
+
+  (config.headers as AxiosHeaders).set("Accept", "application/json");
+  (config.headers as AxiosHeaders).set("Content-Type", "application/json");
 
   return config;
 });
@@ -44,19 +54,20 @@ http.interceptors.response.use(
     return resp;
   },
   async (error: AxiosError) => {
-    const original = error.config;
+    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
     logger.error("HTTP ✖", error.response?.status, original?.url, error.message, {
       data: error.response?.data,
     });
 
-    // If 401 and not already retried, try refresh token
+    // If 401 error, try to refresh the token
     if (error.response?.status === 401 && original && !original._retry) {
       if (!authStore.refreshToken) {
-        logger.warn("No refresh_token. Force logout.");
+        logger.warn("Sem refresh_token. Forçar logout.");
         throw error;
       }
 
-      (original as any)._retry = true;
+      original._retry = true;
 
       if (!isRefreshing) {
         isRefreshing = true;
@@ -71,18 +82,20 @@ http.interceptors.response.use(
         }
       }
 
+      // Espera o refresh terminar
       const newToken = await new Promise<string | null>((resolve) => {
         subscribeTokenRefresh(resolve);
       });
 
       if (!newToken) {
-        logger.warn("Refresh failed. Force logout.");
+        logger.warn("Refresh falhou. Forçar logout.");
         throw error;
       }
 
-       (original.headers as any).set
-        ? original.headers.set("Authorization", `Bearer ${newToken}`)
-        : (original.headers = { ...(original.headers || {}), Authorization: `Bearer ${newToken}` });
+      original.headers = ensureAxiosHeaders(original.headers);
+      (original.headers as AxiosHeaders).set("Authorization", `Bearer ${newToken}`);
+      (original.headers as AxiosHeaders).set("Accept", "application/json");
+      (original.headers as AxiosHeaders).set("Content-Type", "application/json");
 
       return http(original);
     }
