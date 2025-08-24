@@ -1,17 +1,41 @@
+import { Routes, Route, Navigate, Link } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import OAuthCallback from "./pages/OAuthCallback";
+import Home from "./pages/Home";
+import { authStore } from "./services/authService";
 
-import './App.css'
-
-function App() {
-
-
-  return (
-  <div className="min-h-screen grid place-items-center bg-slate-50">
-      <div className="rounded-2xl border p-6 shadow-sm bg-white">
-        <h1 className="text-2xl font-semibold">Tailwind v4 + Vite ✅</h1>
-        <p className="mt-2 text-slate-600">Hello World</p>
-      </div>
-    </div>
-  )
+function Protected({ children }: { children: React.ReactNode }) {
+  const isAuthed = !!authStore.accessToken;
+  return isAuthed ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-export default App
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b bg-white">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-center gap-6">
+          <Link to="/" className="font-semibold">ShopNow — Duplicate Management</Link>
+          <nav className="text-sm text-slate-600 flex gap-4">
+            <Link to="/">Home</Link>
+            <Link to="/login">Login</Link>
+          </nav>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl p-6">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Protected>
+                <Home />
+              </Protected>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
