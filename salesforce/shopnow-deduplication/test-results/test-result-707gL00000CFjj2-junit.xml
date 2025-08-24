@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite name="force.apex" timestamp="2025-08-24T15:06:44.000Z" hostname="https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com" tests="30" failures="3"  errors="0"  time="4.93">
+        <properties>
+            <property name="outcome" value="Failed"/>
+            <property name="testsRan" value="30"/>
+            <property name="passing" value="27"/>
+            <property name="failing" value="3"/>
+            <property name="skipped" value="0"/>
+            <property name="passRate" value="90%"/>
+            <property name="failRate" value="10%"/>
+            <property name="testStartTime" value="Sun Aug 24 2025 12:06:44 PM"/>
+            <property name="testSetupTimeInMs" value="85"/>
+            <property name="testExecutionTime" value="4.93 s"/>
+            <property name="testTotalTime" value="5.01 s"/>
+            <property name="commandTime" value="0.38 s"/>
+            <property name="hostname" value="https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com"/>
+            <property name="orgId" value="00DgL000008xvvJUAQ"/>
+            <property name="username" value="matheus-carvalho87500@agentforce.com"/>
+            <property name="testRunId" value="707gL00000CFjj2"/>
+            <property name="userId" value="005gL000006QiYEQA0"/>
+            <property name="coveredLines" value="370"/>
+            <property name="testRunCoverage" value="74%"/>
+            <property name="orgWideCoverage" value="74%"/>
+        </properties>
+        <testcase name="testBatchCreatesMatchesAndIsIdempotent" classname="DuplicateMatchingBatchTest" time="0.50">
+        </testcase>
+        <testcase name="testFinishSendsSummaryAndBatchCompletes" classname="DuplicateMatchingBatchTest" time="0.16">
+        </testcase>
+        <testcase name="testStartWithSpecificIdsBranch" classname="DuplicateMatchingBatchTest" time="0.18">
+        </testcase>
+        <testcase name="testCheckCRUD_read_ok" classname="SecurityUtilTest" time="0.08">
+        </testcase>
+        <testcase name="testCheckFLS_invalidField_throws" classname="SecurityUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testCheckFLS_read_ok" classname="SecurityUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testSanitizeInput_and_Sort" classname="SecurityUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testValidateAccess_enforced_throws" classname="SecurityUtilTest" time="0.02">
+        </testcase>
+        <testcase name="testValidateAccess_softMode_noException" classname="SecurityUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testScheduleHourlyAndRun" classname="DuplicateMatchingSchedulerTest" time="0.45">
+        </testcase>
+        <testcase name="testSchedulerEnqueuesBatch" classname="DuplicateMatchingSchedulerTest" time="0.31">
+        </testcase>
+        <testcase name="testCalculateSimilarityClose" classname="FuzzyMatchingUtilTest" time="0.07">
+        </testcase>
+        <testcase name="testCalculateSimilarityEmpty" classname="FuzzyMatchingUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testCalculateSimilarityExact" classname="FuzzyMatchingUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testNormalizeString" classname="FuzzyMatchingUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testPhoneNumberMatch" classname="FuzzyMatchingUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testTokenize" classname="FuzzyMatchingUtilTest" time="0.01">
+        </testcase>
+        <testcase name="testGetPendingDuplicates" classname="DuplicateManagementAPITest" time="0.16">
+            <failure message="System.AssertException: Assertion Failed: Expected: 200, Actual: 404"><![CDATA[Class.DuplicateManagementAPITest.testGetPendingDuplicates: line 55, column 1]]></failure>
+        </testcase>
+        <testcase name="testIgnoreAction" classname="DuplicateManagementAPITest" time="0.18">
+        </testcase>
+        <testcase name="testInvalidId" classname="DuplicateManagementAPITest" time="0.10">
+        </testcase>
+        <testcase name="testMergeAction" classname="DuplicateManagementAPITest" time="1.64">
+            <failure message="System.AssertException: Assertion Failed: Expected: 200, Actual: 400"><![CDATA[Class.DuplicateManagementAPITest.testMergeAction: line 106, column 1]]></failure>
+        </testcase>
+        <testcase name="testPagination" classname="DuplicateManagementAPITest" time="0.07">
+            <failure message="System.AssertException: Assertion Failed: Expected: 200, Actual: 404"><![CDATA[Class.DuplicateManagementAPITest.testPagination: line 79, column 1]]></failure>
+        </testcase>
+        <testcase name="testUnauthorized" classname="DuplicateManagementAPITest" time="0.80">
+        </testcase>
+        <testcase name="testBulkProcessing" classname="DuplicateMatchingServiceTest" time="0.07">
+        </testcase>
+        <testcase name="testExactEmailMatch" classname="DuplicateMatchingServiceTest" time="0.01">
+        </testcase>
+        <testcase name="testFuzzyNameWithPhone" classname="DuplicateMatchingServiceTest" time="0.01">
+        </testcase>
+        <testcase name="testGovernorLimits" classname="DuplicateMatchingServiceTest" time="0.01">
+        </testcase>
+        <testcase name="testLastNameWithPhone" classname="DuplicateMatchingServiceTest" time="0.01">
+        </testcase>
+        <testcase name="testNoMatch" classname="DuplicateMatchingServiceTest" time="0.00">
+        </testcase>
+    </testsuite>
+</testsuites>
