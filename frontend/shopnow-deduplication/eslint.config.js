@@ -1,4 +1,4 @@
-// eslint.config.ts
+// eslint.config.js
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
@@ -15,13 +15,15 @@ export default tseslint.config([
 
   {
     files: ['**/*.{ts,tsx}'],
+
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
       },
     },
+
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -30,15 +32,19 @@ export default tseslint.config([
       import: importPlugin,
       'unused-imports': unusedImports,
     },
+
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
+      react.configs.recommended,
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
     ],
+
     settings: {
       react: { version: 'detect' },
     },
+
     rules: {
       'react/react-in-jsx-scope': 'off',
 

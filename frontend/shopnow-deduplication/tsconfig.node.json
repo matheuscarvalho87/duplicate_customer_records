@@ -13,7 +13,10 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* Node types aqui */
+    "types": ["node"],
+
+    /* Linting / security */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
