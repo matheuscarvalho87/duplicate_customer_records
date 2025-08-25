@@ -9,6 +9,8 @@ export const ENV = {
   SF_REDIRECT_URI: import.meta.env.VITE_SF_REDIRECT_URI as string,
   SF_SCOPES: (import.meta.env.VITE_SF_SCOPES as string) || "openid refresh_token api web",
 
+  DEV_AUTH_PROXY_PATH: import.meta.env.VITE_DEV_AUTH_PROXY_PATH as string | undefined,
+
   LOG_LEVEL: (import.meta.env.VITE_LOG_LEVEL as string) || "info",
 };
 
@@ -17,4 +19,11 @@ export const apiBase = (() => {
     return `${ENV.DEV_PROXY_PATH}${ENV.SF_API_PREFIX}`;
   }
   return `${ENV.SF_BASE_URL}${ENV.SF_API_PREFIX}`;
+})();
+
+export const tokenEndpoint = (() => {
+  if (import.meta.env.DEV && ENV.DEV_AUTH_PROXY_PATH) {
+    return `${ENV.DEV_AUTH_PROXY_PATH}/services/oauth2/token`;
+  }
+  return ENV.SF_TOKEN_URL;
 })();

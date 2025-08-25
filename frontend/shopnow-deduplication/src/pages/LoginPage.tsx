@@ -6,17 +6,20 @@ export default function LoginPage() {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Login Salesforce</h2>
-      <p className="text-slate-600">
-        Authenticate with your Salesforce account to access the application.
-      </p>
+      
 
       {!isAuthed ? (
-        <button
-          onClick={() => authService.login()}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-white"
-        >
-          Enter with Salesforce
-        </button>
+        <>
+          <p className="text-slate-600">
+            Authenticate with your Salesforce account to access the application.
+          </p>
+          <button
+            onClick={() => authService.login()}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white"
+          >
+            Enter with Salesforce
+          </button>
+        </>
       ) : (
         <div className="rounded border p-4 bg-white">
           <p className="text-emerald-700">You're already authenticated.</p>

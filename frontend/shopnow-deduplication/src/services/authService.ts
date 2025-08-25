@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ENV } from "../config/env";
+import { ENV, tokenEndpoint } from "../config/env";
 import { createCodeChallenge, generateCodeVerifier, popPkce, storePkce } from "../utils/pkce";
 import { logger } from "../utils/logger";
 
@@ -104,7 +104,7 @@ export const authService = {
       code_verifier: verifier,
     });
 
-    const resp = await axios.post<TokenResponse>(ENV.SF_TOKEN_URL, body, {
+    const resp = await axios.post(tokenEndpoint, body, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
@@ -122,7 +122,7 @@ export const authService = {
       refresh_token,
     });
 
-    const resp = await axios.post<TokenResponse>(ENV.SF_TOKEN_URL, body, {
+    const resp = await axios.post(tokenEndpoint, body, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
