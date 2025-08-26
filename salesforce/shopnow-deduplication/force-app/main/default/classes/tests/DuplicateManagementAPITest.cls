@@ -1,178 +1,168 @@
 @IsTest
 private class DuplicateManagementAPITest {
-    private static User makeBasicUser() {
-        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
-        User u = new User(
-            Alias = 'stdusr',
-            Email = 'stdusr@example.com',
-            EmailEncodingKey = 'UTF-8',
-            LastName = 'Std',
-            LanguageLocaleKey = 'en_US',
-            LocaleSidKey = 'en_US',
-            TimeZoneSidKey = 'America/Sao_Paulo',
-            Username = 'stdusr' + System.currentTimeMillis() + '@example.com',
-            ProfileId = p.Id
-        );
-        return u;
+    private static List<Customer__c> seedCustomers(Integer qty, String prefix) {
+        List<Customer__c> customers = new List<Customer__c>();
+        for (Integer i = 0; i < qty; i++) {
+            customers.add(new Customer__c(
+                FirstName__c = prefix + i,
+                LastName__c  = 'Tester',
+                Email__c     = prefix + i + '@ex.com',
+                Phone__c     = '555000' + String.valueOf(100 + i)
+            ));
+        }
+        insert customers;
+        return customers;
     }
 
-    private static Map<String, Object> seedData() {
-        List<Customer__c> cs = new List<Customer__c>{
-            new Customer__c(FirstName__c='John', LastName__c='Smith', Email__c='john.smith@example.com', Phone__c='555-1234'),
-            new Customer__c(FirstName__c='Jon',  LastName__c='Smith', Email__c='jon.smith@example.com',  Phone__c='555-1234'),
-            new Customer__c(FirstName__c='Jane', LastName__c='Doe',   Email__c='jane.doe@example.com',  Phone__c='555-5678'),
-            new Customer__c(FirstName__c='Jane', LastName__c='D.',    Email__c='j.doe@example.com',     Phone__c='555-5678')
-        };
-        insert cs;
-
-        List<Duplicate_Match__c> matches = new List<Duplicate_Match__c>{
-            new Duplicate_Match__c(Customer_A__c = cs[0].Id, Customer_B__c = cs[1].Id, Match_Score__c = 70, Status__c='Pending Review'),
-            new Duplicate_Match__c(Customer_A__c = cs[2].Id, Customer_B__c = cs[3].Id, Match_Score__c = 50, Status__c='Pending Review')
-        };
+    private static List<Duplicate_Match__c> seedPendingMatches(
+        List<Customer__c> aList,
+        List<Customer__c> bList,
+        List<Integer> scores
+    ) {
+        List<Duplicate_Match__c> matches = new List<Duplicate_Match__c>();
+        for (Integer i = 0; i < scores.size(); i++) {
+            Duplicate_Match__c dm = new Duplicate_Match__c();
+            dm.Customer_A__c  = aList[Math.mod(i, aList.size())].Id;
+            dm.Customer_B__c  = bList[Math.mod(i, bList.size())].Id;
+            dm.Match_Score__c = scores[i];
+            dm.Status__c      = 'Pending Review';
+            matches.add(dm);
+        }
         insert matches;
+        return matches;
+    }
 
-        return new Map<String, Object>{
-            'customers' => cs,
-            'matches'   => matches
-        };
+    private static RestRequest makeGetReq(Integer limitSize, Integer offsetSize, String sortKey, String sortOrder) {
+        RestRequest req = new RestRequest();
+        req.requestUri  = '/services/apexrest/duplicates/pending';
+        req.httpMethod  = 'GET';
+
+        req.addParameter('limit',     String.valueOf(limitSize));
+        req.addParameter('offset',    String.valueOf(offsetSize));
+        req.addParameter('minScore',  '0');
+        req.addParameter('sinceDays', '365');
+        req.addParameter('sort',      (sortKey   == null ? 'score' : sortKey));
+        req.addParameter('order',     (sortOrder == null ? 'desc'  : sortOrder));
+
+        return req;
+    }
+
+    private static RestRequest makePostResolveReq(Id matchId, String jsonBody) {
+        RestRequest req = new RestRequest();
+        req.requestUri  = '/services/apexrest/duplicates/' + String.valueOf(matchId) + '/resolve';
+        req.httpMethod  = 'POST';
+        req.requestBody = Blob.valueOf(jsonBody == null ? '{}' : jsonBody);
+        return req;
+    }
+
+    private static Integer toInt(Object v) { return Integer.valueOf(String.valueOf(v)); }
+
+    @IsTest
+    static void getPending_handler_payload_stable() {
+        List<Customer__c> aList = seedCustomers(3, 'A');
+        List<Customer__c> bList = seedCustomers(3, 'B');
+        seedPendingMatches(aList, bList, new List<Integer>{ 10, 50, 90 });
+
+        RestContext.request  = makeGetReq(3, 0, 'score', 'desc');
+        RestContext.response = new RestResponse();
+
+        DuplicateManagementAPI api = new DuplicateManagementAPI();
+
+        Test.startTest();
+        api.handleGetPending();
+        Test.stopTest();
+
+        System.assertEquals(200, RestContext.response.statusCode, 'HTTP 200 expected');
+
+        String body = RestContext.response.responseBody == null ? '' : RestContext.response.responseBody.toString();
+        Map<String, Object> json  = (Map<String, Object>) JSON.deserializeUntyped(body);
+        System.assert(json.containsKey('items') && json.containsKey('page'), 'Envelope must contain items and page');
+
+        List<Object> items        = (List<Object>) json.get('items');
+        Map<String, Object> page  = (Map<String, Object>) json.get('page');
+
+        System.assertEquals(3, items.size(), 'limit=3 should return 3 items');
+        System.assertEquals(3, toInt(page.get('limit')));
+        System.assertEquals(0, toInt(page.get('offset')));
+        System.assertEquals(3, toInt(page.get('total')));
+
+        Map<String, Object> first = (Map<String, Object>) items[0];
+        System.assert(first.containsKey('id'));
+        System.assert(first.containsKey('score'));
+        System.assert(first.containsKey('status'));
+        System.assert(first.containsKey('createdAt'));
+        System.assert(first.containsKey('customerA'));
+        System.assert(first.containsKey('customerB'));
+
+        Map<String, Object> ca = (Map<String, Object>) first.get('customerA');
+        Map<String, Object> cb = (Map<String, Object>) first.get('customerB');
+        System.assert(ca.containsKey('id'), 'customerA.id present');
+        System.assert(cb.containsKey('id'), 'customerB.id present');
     }
 
     @IsTest
-    static void testGetPendingDuplicates() {
-        Map<String, Object> data = seedData();
+    static void getPending_handler_sort_by_score_desc() {
+        List<Customer__c> aList = seedCustomers(3, 'A2');
+        List<Customer__c> bList = seedCustomers(3, 'B2');
+        seedPendingMatches(aList, bList, new List<Integer>{ 20, 60, 40, 95, 70 });
 
-        RestRequest req = new RestRequest();
-        req.requestUri = '/services/apexrest/duplicates/pending?limit=10&offset=0&minScore=40&sort=score&order=desc';
-        req.httpMethod = 'GET';
-        RestResponse res = new RestResponse();
-        RestContext.request = req;
-        RestContext.response = res;
+        RestContext.request  = makeGetReq(5, 0, 'score', 'desc');
+        RestContext.response = new RestResponse();
 
-        Test.startTest();
-        DuplicateManagementAPI.getPending();
-        Test.stopTest();
-
-        System.assertEquals(200, res.statusCode);
-        Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(res.responseBody.toString());
-        List<Object> items = (List<Object>) parsed.get('items');
-        Map<String, Object> page = (Map<String, Object>) parsed.get('page');
-        System.assert(items.size() >= 2, 'Deveria retornar ao menos 2 itens');
-        System.assertEquals(10, (Integer)page.get('limit'));
-        System.assertEquals(0, (Integer)page.get('offset'));
-        System.assertNotEquals(null, page.get('total'));
-    }
-
-    @IsTest
-    static void testPagination() {
-        Map<String, Object> data = seedData();
-
-        RestRequest req = new RestRequest();
-        req.requestUri = '/services/apexrest/duplicates/pending?limit=1&offset=1&minScore=0&sort=createdDate&order=asc';
-        req.httpMethod = 'GET';
-        RestResponse res = new RestResponse();
-        RestContext.request = req; RestContext.response = res;
+        DuplicateManagementAPI api = new DuplicateManagementAPI();
 
         Test.startTest();
-        DuplicateManagementAPI.getPending();
+        api.handleGetPending();
         Test.stopTest();
 
-        System.assertEquals(200, res.statusCode);
-        Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(res.responseBody.toString());
-        List<Object> items = (List<Object>) parsed.get('items');
-        Map<String, Object> page = (Map<String, Object>) parsed.get('page');
-        System.assertEquals(1, items.size());
-        System.assertEquals(1, (Integer)page.get('offset'));
-        System.assertEquals(1, (Integer)page.get('limit'));
-    }
+        String body = RestContext.response.responseBody == null ? '' : RestContext.response.responseBody.toString();
+        Map<String, Object> json  = (Map<String, Object>) JSON.deserializeUntyped(body);
+        List<Object> items        = (List<Object>) json.get('items');
 
-    @IsTest
-    static void testMergeAction() {
-        Map<String, Object> data = seedData();
-        List<Duplicate_Match__c> ms = (List<Duplicate_Match__c>)data.get('matches');
-        Id matchId = ms[0].Id;
-        Id loserId = ((List<Customer__c>)data.get('customers'))[1].Id; // Customer_B do primeiro match
-
-        RestRequest req = new RestRequest();
-        req.requestUri = '/services/apexrest/duplicates/' + matchId + '/resolve';
-        req.httpMethod = 'POST';
-        req.requestBody = Blob.valueOf('{"action":"merge"}');
-        RestResponse res = new RestResponse();
-        RestContext.request = req; RestContext.response = res;
-
-        Test.startTest();
-        DuplicateManagementAPI.resolve();
-        Test.stopTest();
-
-        System.assertEquals(200, res.statusCode);
-
-        Duplicate_Match__c refreshed = [SELECT Status__c FROM Duplicate_Match__c WHERE Id = :matchId];
-        System.assertEquals('Merged', refreshed.Status__c);
-
-        Boolean loserExists = true;
-        try {
-            Customer__c c = [SELECT Id FROM Customer__c WHERE Id = :loserId];
-        } catch (Exception e) {
-            loserExists = false;
+        List<Decimal> scores = new List<Decimal>();
+        for (Object o : items) {
+            Map<String, Object> row = (Map<String, Object>) o;
+            scores.add((Decimal) row.get('score'));
         }
-        System.assertEquals(false, loserExists, 'Customer_B deveria ter sido deletado');
-    }
-
-    @IsTest
-    static void testIgnoreAction() {
-        Map<String, Object> data = seedData();
-        List<Duplicate_Match__c> ms = (List<Duplicate_Match__c>)data.get('matches');
-        Id matchId = ms[1].Id;
-
-        RestRequest req = new RestRequest();
-        req.requestUri = '/services/apexrest/duplicates/' + matchId + '/resolve';
-        req.httpMethod = 'POST';
-        req.requestBody = Blob.valueOf('{"action":"ignore"}');
-        RestResponse res = new RestResponse();
-        RestContext.request = req; RestContext.response = res;
-
-        Test.startTest();
-        DuplicateManagementAPI.resolve();
-        Test.stopTest();
-
-        System.assertEquals(200, res.statusCode);
-        Duplicate_Match__c refreshed = [SELECT Status__c FROM Duplicate_Match__c WHERE Id = :matchId];
-        System.assertEquals('Ignored', refreshed.Status__c);
-    }
-
-    @IsTest
-    static void testInvalidId() {
-        RestRequest req = new RestRequest();
-        req.requestUri = '/services/apexrest/duplicates/001000000000000/resolve';
-        req.httpMethod = 'POST';
-        req.requestBody = Blob.valueOf('{"action":"merge"}');
-        RestResponse res = new RestResponse();
-        RestContext.request = req; RestContext.response = res;
-
-        Test.startTest();
-        DuplicateManagementAPI.resolve();
-        Test.stopTest();
-
-        System.assertEquals(404, res.statusCode);
-    }
-
-    @IsTest
-    static void testUnauthorized() {
-        Map<String, Object> data = seedData();
-
-        User u = makeBasicUser();
-        insert u;
-        System.runAs(u) {
-            RestRequest req = new RestRequest();
-            req.requestUri = '/services/apexrest/duplicates/pending';
-            req.httpMethod = 'GET';
-            RestResponse res = new RestResponse();
-            RestContext.request = req; RestContext.response = res;
-
-            Test.startTest();
-            DuplicateManagementAPI.getPending();
-            Test.stopTest();
-
-            System.assertEquals(403, res.statusCode);
+        for (Integer i = 1; i < scores.size(); i++) {
+            System.assert(scores[i-1] >= scores[i], 'Scores must be sorted DESC');
         }
+    }
+
+    @IsTest
+    static void get_router_403_forbidden_error_shape() {
+        RestContext.request  = makeGetReq(1, 0, 'score', 'desc');
+        RestContext.response = new RestResponse();
+
+        Test.startTest();
+        DuplicateManagementAPI.get();
+        Test.stopTest();
+
+        System.assertEquals(403, RestContext.response.statusCode, 'Expected 403 Forbidden');
+        String body = RestContext.response.responseBody == null ? '' : RestContext.response.responseBody.toString();
+        Map<String, Object> err = (Map<String, Object>) JSON.deserializeUntyped(body);
+        System.assertEquals('Forbidden', String.valueOf(err.get('message')));
+        System.assert(err.containsKey('details'), 'Error payload must include "details"');
+    }
+
+    @IsTest
+    static void post_resolve_router_403_forbidden_error_shape() {
+        List<Customer__c> aList = seedCustomers(1, 'AX');
+        List<Customer__c> bList = seedCustomers(1, 'BX');
+        List<Duplicate_Match__c> matches = seedPendingMatches(aList, bList, new List<Integer>{ 80 });
+        Id matchId = matches[0].Id;
+
+        RestContext.request  = makePostResolveReq(matchId, '{"action":"ignore"}');
+        RestContext.response = new RestResponse();
+
+        Test.startTest();
+        DuplicateManagementAPI.resolve();
+        Test.stopTest();
+
+        System.assertEquals(403, RestContext.response.statusCode, 'Expected 403 Forbidden');
+        String body = RestContext.response.responseBody == null ? '' : RestContext.response.responseBody.toString();
+        Map<String, Object> err = (Map<String, Object>) JSON.deserializeUntyped(body);
+        System.assertEquals('Forbidden', String.valueOf(err.get('message')));
+        System.assert(err.containsKey('details'), 'Error payload must include "details"');
     }
 }

@@ -1,4 +1,3 @@
-
 public abstract with sharing class BaseService {
     protected String className;
     private Long startTime;
@@ -377,6 +376,11 @@ public abstract with sharing class BaseService {
     
     protected String sanitizeInput(String input, Integer maxLength, Boolean allowSpaces) {
         return SecurityUtil.sanitizeInput(input, maxLength, allowSpaces);
+    }
+
+    protected void setMetric(String key, Object value) {
+        if (String.isBlank(key)) return;
+        performanceMetrics.put(key, value);
     }
     
     public Map<String, Object> getPerformanceMetrics() {

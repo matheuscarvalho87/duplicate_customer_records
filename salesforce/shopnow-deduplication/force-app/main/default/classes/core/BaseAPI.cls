@@ -15,7 +15,7 @@ public abstract with sharing class BaseAPI extends BaseService {
     @TestVisible
     public static void handleOptions() {
         setCorsHeaders();
-        RestContext.response.statusCode = 204; // No Content
+        RestContext.response.statusCode = 204;
     }
 
     protected void ok(Object body, Integer statusCode) {
