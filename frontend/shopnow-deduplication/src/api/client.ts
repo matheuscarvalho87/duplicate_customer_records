@@ -81,14 +81,12 @@ http.interceptors.response.use(
           isRefreshing = false;
         }
       }
-
-      // Espera o refresh terminar
       const newToken = await new Promise<string | null>((resolve) => {
         subscribeTokenRefresh(resolve);
       });
 
       if (!newToken) {
-        logger.warn("Refresh falhou. Forçar logout.");
+        logger.warn("Refresh failed. Force logout.");
         throw error;
       }
 
