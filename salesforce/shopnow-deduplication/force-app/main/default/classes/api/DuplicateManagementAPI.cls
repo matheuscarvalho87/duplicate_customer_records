@@ -50,10 +50,10 @@ global with sharing class DuplicateManagementAPI extends BaseAPI {
     private void handleGetPending() {
         Long t0 = System.currentTimeMillis();
 
-        Integer pageLimit   = qi('limit',     50, 1, 200);
-        Integer pageOffset  = qi('offset',     0, 0, 5000);
-        Decimal minScore    = qd('minScore',   0, 0, 1000);
-        Integer sinceDays   = qi('sinceDays', 365, 1, 1825);
+        Integer pageLimit   = validateQueryInteger('limit',     50, 1, 200);
+        Integer pageOffset  = validateQueryInteger('offset',     0, 0, 5000);
+        Decimal minScore    = validateQueryDecimal('minScore',   0, 0, 1000);
+        Integer sinceDays   = validateQueryInteger('sinceDays', 365, 1, 1825);
 
         String sortParam  = sanitizeInput(q('sort',  null), 32, false);
         String orderParam = sanitizeInput(q('order', null),  4, false);

@@ -59,7 +59,7 @@ public abstract with sharing class BaseAPI extends BaseService {
         return (v == null || v.trim().length() == 0) ? dft : v;
     }
 
-    protected Integer qi(String name, Integer dft, Integer minVal, Integer maxVal) {
+    protected Integer validateQueryInteger(String name, Integer dft, Integer minVal, Integer maxVal) {
         try {
             String raw = q(name, null);
             if (raw == null) return dft;
@@ -73,7 +73,7 @@ public abstract with sharing class BaseAPI extends BaseService {
         }
     }
 
-    protected Decimal qd(String name, Decimal dft, Decimal minVal, Decimal maxVal) {
+    protected Decimal validateQueryDecimal(String name, Decimal dft, Decimal minVal, Decimal maxVal) {
         try {
             String raw = q(name, null);
             if (raw == null) return dft;
