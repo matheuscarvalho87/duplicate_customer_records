@@ -30,17 +30,6 @@ public with sharing class FuzzyMatchingUtil {
         return tokens;
     }
 
-    public static Decimal calculateSimilarity(String s1, String s2) {
-        String a = normalizeString(s1), b = normalizeString(s2);
-        if (a.length() == 0 && b.length() == 0) return 0;
-        if (a == b) return 1;
-        Integer maxLen = Math.max(a.length(), b.length());
-        if (maxLen == 0) return 0;
-        Integer dist = DuplicateMatchingService.levenshteinDistance(a, b);
-        Decimal sim = 1 - (Decimal.valueOf(dist) / Decimal.valueOf(maxLen));
-        return sim.setScale(3);
-    }
-
     public static Boolean phoneNumberMatch(String p1, String p2) {
         if (String.isBlank(p1) || String.isBlank(p2)) return false;
         String a = p1.replaceAll('[^0-9]+', '');

@@ -21,24 +21,6 @@ private class FuzzyMatchingUtilTest {
     }
 
     @IsTest
-    static void testCalculateSimilarityExact() {
-        Decimal sim = FuzzyMatchingUtil.calculateSimilarity('John', 'John');
-        System.assertEquals(1, sim);
-    }
-
-    @IsTest
-    static void testCalculateSimilarityClose() {
-        Decimal sim = FuzzyMatchingUtil.calculateSimilarity('John', 'Jon');
-        System.assert(sim >= 0.7 && sim < 1, 'Expected partial similarity between John and Jon');
-    }
-
-    @IsTest
-    static void testCalculateSimilarityEmpty() {
-        Decimal sim = FuzzyMatchingUtil.calculateSimilarity('', '');
-        System.assertEquals(0, sim);
-    }
-
-    @IsTest
     static void testPhoneNumberMatch() {
         System.assertEquals(true, FuzzyMatchingUtil.phoneNumberMatch('(555) 123-4567', '5551234567'));
         System.assertEquals(true, FuzzyMatchingUtil.phoneNumberMatch('5551234', '5551234'));
