@@ -3,7 +3,6 @@
     <fullName>SignupDate__c</fullName>
     <defaultValue>TODAY()</defaultValue>
     <description>Date when customer signed up</description>
-    <externalId>false</externalId>
     <label>Signup Date</label>
     <required>true</required>
     <trackHistory>true</trackHistory>

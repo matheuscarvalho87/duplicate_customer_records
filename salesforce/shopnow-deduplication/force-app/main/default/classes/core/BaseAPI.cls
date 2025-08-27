@@ -54,58 +54,65 @@ public abstract with sharing class BaseAPI extends BaseService {
         RestContext.response.responseBody = Blob.valueOf(JSON.serialize(err));
     }
 
-    protected String validateQuery(String name, String dft) {
-        String v = RestContext.request != null ? RestContext.request.params.get(name) : null;
-        return (v == null || v.trim().length() == 0) ? dft : v;
-    }
+   protected String validateQuery(String paramName, String defaultValue) {
+    RestRequest currentRequest = RestContext.request;
 
-    protected Integer validateQueryInteger(String name, Integer dft, Integer minVal, Integer maxVal) {
-        try {
-            String raw = validateQuery(name, null);
-            if (raw == null) return dft;
-            Integer val = Integer.valueOf(raw);
-            if (minVal != null && val < minVal) val = minVal;
-            if (maxVal != null && val > maxVal) val = maxVal;
-            return val;
-        } catch (Exception e) {
-            badRequest('Invalid integer for "' + name + '"', new Map<String,Object>{ 'param' => name });
-            throw e;
+    String value = (currentRequest != null && currentRequest.params != null)
+        ? currentRequest.params.get(paramName)
+        : null;
+
+    if (String.isBlank(value) && currentRequest != null) {
+        String requestUri = currentRequest.requestURI;
+        if (requestUri != null) {
+            Integer questionMarkIndex = requestUri.indexOf('?');
+            if (questionMarkIndex != -1 && questionMarkIndex < requestUri.length() - 1) {
+                String queryString = requestUri.substring(questionMarkIndex + 1);
+                for (String entry : queryString.split('&')) {
+                    List<String> keyValue = entry.split('=', 2);
+                    if (!keyValue.isEmpty()) {
+                        String queryKey = EncodingUtil.urlDecode(keyValue[0], 'UTF-8');
+                        if (queryKey == paramName) {
+                            String queryValue = (keyValue.size() > 1)
+                                ? EncodingUtil.urlDecode(keyValue[1], 'UTF-8')
+                                : '';
+                            value = queryValue;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
+    return String.isBlank(value) ? defaultValue : value;
+}
 
-    protected Decimal validateQueryDecimal(String name, Decimal dft, Decimal minVal, Decimal maxVal) {
-        try {
-            String raw = validateQuery(name, null);
-            if (raw == null) return dft;
-            Decimal val = Decimal.valueOf(raw);
-            if (minVal != null && val < minVal) val = minVal;
-            if (maxVal != null && val > maxVal) val = maxVal;
-            return val;
-        } catch (Exception e) {
-            badRequest('Invalid decimal for "' + name + '"', new Map<String,Object>{ 'param' => name });
-            throw e;
-        }
-    }
+protected Integer validateQueryInteger(String paramName, Integer defaultValue, Integer minValue, Integer maxValue) {
+    try {
+        String rawValue = validateQuery(paramName, null);
+        if (rawValue == null) return defaultValue;
 
-    protected String qAllowed(String name, String dft, Set<String> allowed) {
-        String v = validateQuery(name, dft);
-        if (v == null) return dft;
-        String low = v.toLowerCase();
-        if (!allowed.contains(low)) {
-            badRequest('Invalid value for "' + name + '"', new Map<String,Object>{ 'param' => name, 'allowed' => allowed });
-            throw new CalloutException('Invalid parameter: ' + name);
-        }
-        return low;
+        Integer parsedValue = Integer.valueOf(rawValue);
+        if (minValue != null && parsedValue < minValue) parsedValue = minValue;
+        if (maxValue != null && parsedValue > maxValue) parsedValue = maxValue;
+        return parsedValue;
+    } catch (Exception ex) {
+        badRequest('Invalid integer for "' + paramName + '"', new Map<String, Object>{ 'param' => paramName });
+        throw ex;
     }
+}
 
-    protected Map<String, Object> pageEnvelope(Integer total, Integer pageOffset, Integer pageLimit, List<Object> items) {
-        return new Map<String, Object>{
-            'page' => new Map<String, Object>{
-                'total'  => total,
-                'offset' => pageOffset,
-                'limit'  => pageLimit
-            },
-            'items' => items
-        };
+protected String qAllowed(String paramName, String defaultValue, Set<String> allowedValues) {
+    String candidate = validateQuery(paramName, defaultValue);
+    if (candidate == null) return defaultValue;
+
+    String normalizedCandidate = candidate.toLowerCase();
+    if (!allowedValues.contains(normalizedCandidate)) {
+        badRequest(
+            'Invalid value for "' + paramName + '"',
+            new Map<String, Object>{ 'param' => paramName, 'allowed' => allowedValues }
+        );
+        throw new CalloutException('Invalid parameter: ' + paramName);
     }
+    return normalizedCandidate;
+}
 }

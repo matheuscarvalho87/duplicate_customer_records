@@ -6,7 +6,6 @@ private class DuplicateMatchingBatchTest {
         String run = String.valueOf(System.currentTimeMillis());
 
         List<Customer__c> cs = new List<Customer__c>();
-
         cs.add(new Customer__c(
             FirstName__c='John', LastName__c='Smith',
             Email__c='john-'+run+'@ex.com',
@@ -19,7 +18,6 @@ private class DuplicateMatchingBatchTest {
             Phone__c='5551234567',
             IsActive__c=true
         ));
-
         cs.add(new Customer__c(
             FirstName__c='Jane', LastName__c='Doe',
             Email__c='jane-'+run+'@ex.com',
@@ -32,7 +30,6 @@ private class DuplicateMatchingBatchTest {
             Phone__c='(555) 567-8901',
             IsActive__c=true
         ));
-
         insert cs;
     }
 
@@ -41,21 +38,23 @@ private class DuplicateMatchingBatchTest {
         Integer before = [SELECT COUNT() FROM Duplicate_Match__c];
 
         Test.startTest();
-
-        Database.executeBatch(new DuplicateMatchingBatch(), DuplicateMatchConstants.BATCH_SIZE);
-        Database.executeBatch(new DuplicateMatchingBatch(), DuplicateMatchConstants.BATCH_SIZE);
+        Database.executeBatch(new DuplicateMatchingBatch());
+        Database.executeBatch(new DuplicateMatchingBatch());
         Test.stopTest();
 
         Integer after = [SELECT COUNT() FROM Duplicate_Match__c];
 
-        System.assertEquals(before + 2, after,
-            'Running two batches consecutively should create the two unique pairs only once (idempotent).');
+        System.assertEquals(
+            before + 2,
+            after,
+            'Running the batch twice should create the two unique pairs only once (idempotent).'
+        );
     }
 
     @IsTest
     static void testFinishSendsSummaryAndBatchCompletes() {
         Test.startTest();
-        Id jobId = Database.executeBatch(new DuplicateMatchingBatch(), DuplicateMatchConstants.BATCH_SIZE);
+        Id jobId = Database.executeBatch(new DuplicateMatchingBatch());
         Test.stopTest();
 
         AsyncApexJob[] jobs = [
@@ -65,8 +64,10 @@ private class DuplicateMatchingBatchTest {
             LIMIT 1
         ];
         System.assertEquals(1, jobs.size(), 'Expected one AsyncApexJob for the executed batch.');
-        System.assert(jobs[0].Status == 'Completed' || jobs[0].Status == 'CompletedWithErrors',
-            'Batch should have completed (with or without errors).');
+        System.assert(
+            jobs[0].Status == 'Completed' || jobs[0].Status == 'CompletedWithErrors',
+            'Batch should have completed (with or without errors).'
+        );
     }
 
     @IsTest
@@ -81,8 +82,7 @@ private class DuplicateMatchingBatchTest {
 
         Test.startTest();
         Database.executeBatch(
-            new DuplicateMatchingBatch(new List<Id>{ two[0].Id, two[1].Id }, false),
-            DuplicateMatchConstants.BATCH_SIZE
+            new DuplicateMatchingBatch(new List<Id>{ two[0].Id, two[1].Id }, false)
         );
         Test.stopTest();
 

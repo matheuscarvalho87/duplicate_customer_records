@@ -7,24 +7,39 @@ private class FuzzyMatchingUtilTest {
         System.assertEquals('carlos junior', FuzzyMatchingUtil.normalizeString('  CARLOS   JÚNIOR '));
         System.assertEquals('', FuzzyMatchingUtil.normalizeString(null));
         System.assertEquals('', FuzzyMatchingUtil.normalizeString('   '));
+
+        String norm = FuzzyMatchingUtil.normalizeString(' Áção,   manhã!!  PEÑÓN  ');
+        System.assertEquals('acao manha penon', norm);
+
+        System.assertEquals('new york', FuzzyMatchingUtil.normalizeString('New-York!!'));
     }
 
     @IsTest
-    static void testTokenize() {
-        Set<String> tokens = FuzzyMatchingUtil.tokenize('Hello World 123');
-        System.assert(tokens.contains('hello'));
-        System.assert(tokens.contains('world'));
-        System.assert(tokens.contains('123'));
-        System.assertEquals(3, tokens.size());
+    static void testCalculateSimilarity_identical_and_diacritics() {
+        Decimal s1 = FuzzyMatchingUtil.calculateSimilarity('José', 'Jose');
+        System.assertEquals(Decimal.valueOf('1.000'), s1);
 
-        System.assertEquals(new Set<String>(), FuzzyMatchingUtil.tokenize('   '));
+        Decimal s2 = FuzzyMatchingUtil.calculateSimilarity('New-York!!', 'new york');
+        System.assertEquals(Decimal.valueOf('1.000'), s2);
     }
 
     @IsTest
-    static void testPhoneNumberMatch() {
-        System.assertEquals(true, FuzzyMatchingUtil.phoneNumberMatch('(555) 123-4567', '5551234567'));
-        System.assertEquals(true, FuzzyMatchingUtil.phoneNumberMatch('5551234', '5551234'));
-         System.assertEquals(false, FuzzyMatchingUtil.phoneNumberMatch('55512', '55512')); // less than 6 digits
-        System.assertEquals(false, FuzzyMatchingUtil.phoneNumberMatch(null, '5551234567'));
+    static void testCalculateSimilarity_blankInputCases() {
+        System.assertEquals(Decimal.valueOf('1.000'), FuzzyMatchingUtil.calculateSimilarity('', ''));
+        System.assertEquals(Decimal.valueOf('0.000'), FuzzyMatchingUtil.calculateSimilarity('', 'abc'));
+        System.assertEquals(Decimal.valueOf('0.000'), FuzzyMatchingUtil.calculateSimilarity(null, 'abc'));
+        System.assertEquals(Decimal.valueOf('0.000'), FuzzyMatchingUtil.calculateSimilarity('abc', null));
+    }
+
+    @IsTest
+    static void testCalculateSimilarity_editDistanceExamples() {
+        Decimal jJon = FuzzyMatchingUtil.calculateSimilarity('John', 'Jon');
+        System.assertEquals(Decimal.valueOf('0.750'), jJon);
+
+        Decimal janeJanet = FuzzyMatchingUtil.calculateSimilarity('Jane', 'Janet');
+        System.assertEquals(Decimal.valueOf('0.800'), janeJanet);
+
+        Decimal diff = FuzzyMatchingUtil.calculateSimilarity('abc', 'xyz');
+        System.assertEquals(Decimal.valueOf('0.000'), diff);
     }
 }

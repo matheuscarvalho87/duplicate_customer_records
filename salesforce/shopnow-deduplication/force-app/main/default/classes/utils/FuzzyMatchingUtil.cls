@@ -22,19 +22,29 @@ public with sharing class FuzzyMatchingUtil {
         return s;
     }
 
-    public static Set<String> tokenize(String input) {
-        String norm = normalizeString(input);
-        Set<String> tokens = new Set<String>();
-        if (String.isBlank(norm)) return tokens;
-        for (String t : norm.split(' ')) if (!String.isBlank(t)) tokens.add(t);
-        return tokens;
-    }
-
-    public static Boolean phoneNumberMatch(String p1, String p2) {
-        if (String.isBlank(p1) || String.isBlank(p2)) return false;
-        String a = p1.replaceAll('[^0-9]+', '');
-        String b = p2.replaceAll('[^0-9]+', '');
-        if (a.length() < 6 || b.length() < 6) return false;
-        return a == b;
+      public static Decimal calculateSimilarity(String stringA, String stringB) {
+        if (String.isBlank(stringA) && String.isBlank(stringB)) {
+            return 1.0; 
+        }
+        if (String.isBlank(stringA) || String.isBlank(stringB)) {
+            return 0.0; 
+        }
+        
+        String normalizedA = normalizeString(stringA);
+        String normalizedB = normalizeString(stringB);
+        
+        if (normalizedA.equals(normalizedB)) {
+            return 1.0;
+        }
+        
+        Integer distance = DuplicateMatchingService.levenshteinDistance(normalizedA, normalizedB);
+        Integer maxLength = Math.max(normalizedA.length(), normalizedB.length());
+        
+        if (maxLength == 0) {
+            return 1.0;
+        }
+        
+        Decimal similarity = 1.0 - (Decimal.valueOf(distance) / Decimal.valueOf(maxLength));
+        return similarity.setScale(3);
     }
 }

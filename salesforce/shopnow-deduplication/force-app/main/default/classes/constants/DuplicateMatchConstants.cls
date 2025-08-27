@@ -3,7 +3,8 @@ public with sharing class DuplicateMatchConstants {
     public static final Integer EXACT_EMAIL_MATCH_SCORE = 100;
     public static final Integer FUZZY_NAME_PHONE_MATCH_SCORE = 70;
     public static final Integer SAME_LASTNAME_PHONE_MATCH_SCORE = 50;
-    
+    public static final Integer NO_MATCH_SCORE = 0;    
+    public static final Decimal FUZZY_MATCH_THRESHOLD = 0.8; // 80%
     // Match Types
     public static final String MATCH_TYPE_EMAIL = 'Exact Email Match';
     public static final String MATCH_TYPE_FUZZY_NAME_PHONE = 'Fuzzy Name + Same Phone';
@@ -13,7 +14,6 @@ public with sharing class DuplicateMatchConstants {
     public static final String STATUS_PENDING = 'Pending Review';
     public static final String STATUS_MERGED = 'Merged';
     public static final String STATUS_IGNORED = 'Ignored';
-    
     
     // Batch Processing
     public static final Integer BATCH_SIZE = 200;

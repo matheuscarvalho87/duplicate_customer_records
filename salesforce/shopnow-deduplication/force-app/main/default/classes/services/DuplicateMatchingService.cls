@@ -1,218 +1,192 @@
-public with sharing class DuplicateMatchingService extends BaseService {
+public with sharing class DuplicateMatchingService {
+    
     public static List<Duplicate_Match__c> findDuplicates(List<Customer__c> customers) {
-        return new DuplicateMatchingService().findDuplicatesInternal(customers);
-    }
-
-    protected override String getClassName() {
-        return 'DuplicateMatchingService';
-    }
-
-    @TestVisible
-    private List<Duplicate_Match__c> findDuplicatesInternal(List<Customer__c> customers) {
         if (customers == null || customers.isEmpty()) {
-            logWarning('findDuplicatesInternal', 'Empty customer list received');
+            System.debug('DuplicateMatchingService: Empty customer list provided');
             return new List<Duplicate_Match__c>();
         }
-
-        Long t0 = System.currentTimeMillis();
-
-        List<Customer__c> active = new List<Customer__c>();
-        for (Customer__c c : customers) {
-            if (c != null && (c.IsActive__c == null || c.IsActive__c == true)) {
-                active.add(c);
-            }
-        }
-        if (active.isEmpty()) {
-            logInfo('findDuplicatesInternal', 'No active customers to process');
-            return new List<Duplicate_Match__c>();
-        }
-
-        Map<String, List<Customer__c>> byEmail = new Map<String, List<Customer__c>>();
-        Map<String, List<Customer__c>> byPhone = new Map<String, List<Customer__c>>();
-
-        for (Customer__c c : active) {
-            if (!String.isBlank(c.Email__c)) {
-                String em = normalizeEmail(c.Email__c);
-                if (!String.isBlank(em)) {
-                    if (!byEmail.containsKey(em)) byEmail.put(em, new List<Customer__c>());
-                    byEmail.get(em).add(c);
+        
+        List<Duplicate_Match__c> duplicateMatches = new List<Duplicate_Match__c>();
+        Set<String> processedPairs = new Set<String>();
+        for (Integer i = 0; i < customers.size(); i++) {
+            for (Integer j = i + 1; j < customers.size(); j++) {
+                Customer__c customerA = customers[i];
+                Customer__c customerB = customers[j];
+                
+                if (customerA == null || customerB == null || 
+                    customerA.IsActive__c != true || customerB.IsActive__c != true ||
+                    customerA.IsDeleted__c == true || customerB.IsDeleted__c == true) {
+                    continue;
                 }
-            }
-            if (!String.isBlank(c.Phone__c)) {
-                String ph = normalizePhone(c.Phone__c);
-                if (!String.isBlank(ph)) {
-                    if (!byPhone.containsKey(ph)) byPhone.put(ph, new List<Customer__c>());
-                    byPhone.get(ph).add(c);
+                
+                String pairKey = createPairKey(customerA.Id, customerB.Id);
+                if (processedPairs.contains(pairKey)) {
+                    continue;
                 }
-            }
-        }
-
-        Set<String> seenPairs = new Set<String>();
-        List<Duplicate_Match__c> out = new List<Duplicate_Match__c>();
-
-        addEmailPairs(byEmail, seenPairs, out);
-        addPhonePairs(byPhone, seenPairs, out);
-
-        Long dt = System.currentTimeMillis() - t0;
-        performanceMetrics.put('findDuplicates.countIn', customers.size());
-        performanceMetrics.put('findDuplicates.countActive', active.size());
-        performanceMetrics.put('findDuplicates.pairsOut', out.size());
-        performanceMetrics.put('findDuplicates.timeMs', dt);
-        logInfo('findDuplicatesInternal', 'Pairs=' + out.size() + ' in ' + dt + 'ms');
-
-        return out;
-    }
-
-    @TestVisible
-    private void addEmailPairs(
-        Map<String, List<Customer__c>> byEmail,
-        Set<String> seenPairs,
-        List<Duplicate_Match__c> out
-    ) {
-        if (byEmail == null || byEmail.isEmpty()) return;
-        for (String em : byEmail.keySet()) {
-            List<Customer__c> bucket = byEmail.get(em);
-            if (bucket == null || bucket.size() < 2) continue;
-
-            for (Integer i = 0; i < bucket.size(); i++) {
-                for (Integer j = i + 1; j < bucket.size(); j++) {
-                    Customer__c a = bucket[i], b = bucket[j];
-                    String key = pairKey(a != null ? a.Id : null, b != null ? b.Id : null);
-                    if (key == null || seenPairs.contains(key)) continue;
-                    seenPairs.add(key);
-
-                    out.add(createDuplicateRecord(
-                        a, b,
-                        DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE,
-                        DuplicateMatchConstants.MATCH_TYPE_EMAIL
+                processedPairs.add(pairKey);
+                
+                Integer matchScore = calculateMatchScore(customerA, customerB);
+                String matchType = getMatchType(matchScore);
+                
+                if (matchScore > 0) {
+                    duplicateMatches.add(new Duplicate_Match__c(
+                        Customer_A__c = customerA.Id,
+                        Customer_B__c = customerB.Id,
+                        Match_Score__c = matchScore,
+                        Match_Type__c = matchType,
+                        Status__c = DuplicateMatchConstants.STATUS_PENDING
                     ));
                 }
             }
         }
+        
+        System.debug('DuplicateMatchingService: Found ' + duplicateMatches.size() + ' potential duplicates');
+        return duplicateMatches;
+    }
+    
+    @TestVisible
+    private static Integer calculateMatchScore(Customer__c customerA, Customer__c customerB) {
+        
+        if (hasExactEmailMatch(customerA, customerB)) {
+            return DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE; // 100
+        }
+        
+        if (hasFuzzyNameMatch(customerA, customerB) && hasSamePhone(customerA, customerB)) {
+            return DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE; // 70
+        }
+ 
+        if (hasSameLastName(customerA, customerB) && hasSamePhone(customerA, customerB)) {
+            return DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE; // 50
+        }
+        
+        return DuplicateMatchConstants.NO_MATCH_SCORE;
+    }
+    
+
+    @TestVisible
+    private static Boolean hasExactEmailMatch(Customer__c customerA, Customer__c customerB) {
+        if (String.isBlank(customerA.Email__c) || String.isBlank(customerB.Email__c)) {
+            return false;
+        }
+        
+        String emailA = customerA.Email__c.trim().toLowerCase();
+        String emailB = customerB.Email__c.trim().toLowerCase();
+        
+        return emailA.equals(emailB);
+    }
+    
+ 
+    @TestVisible
+    private static Boolean hasFuzzyNameMatch(Customer__c customerA, Customer__c customerB) {
+        if (String.isBlank(customerA.FirstName__c) || String.isBlank(customerB.FirstName__c)) {
+            return false;
+        }
+        
+        Decimal similarity = FuzzyMatchingUtil.calculateSimilarity(
+            customerA.FirstName__c, 
+            customerB.FirstName__c
+        );
+        
+        return similarity >= DuplicateMatchConstants.FUZZY_MATCH_THRESHOLD; // 0.8 (80%)
+    }
+    
+    @TestVisible
+    private static Boolean hasSameLastName(Customer__c customerA, Customer__c customerB) {
+        if (String.isBlank(customerA.LastName__c) || String.isBlank(customerB.LastName__c)) {
+            return false;
+        }
+        
+        String lastNameA = customerA.LastName__c.trim().toLowerCase();
+        String lastNameB = customerB.LastName__c.trim().toLowerCase();
+        
+        return lastNameA.equals(lastNameB);
+    }
+    
+    @TestVisible
+    private static Boolean hasSamePhone(Customer__c customerA, Customer__c customerB) {
+        if (String.isBlank(customerA.Phone__c) || String.isBlank(customerB.Phone__c)) {
+            return false;
+        }
+        
+        String phoneA = normalizePhone(customerA.Phone__c);
+        String phoneB = normalizePhone(customerB.Phone__c);
+        
+        if (phoneA.length() < 6 || phoneB.length() < 6) {
+            return false;
+        }
+        
+        return phoneA.equals(phoneB);
     }
 
     @TestVisible
-    private void addPhonePairs(
-        Map<String, List<Customer__c>> byPhone,
-        Set<String> seenPairs,
-        List<Duplicate_Match__c> out
-    ) {
-        if (byPhone == null || byPhone.isEmpty()) return;
+    private static String normalizePhone(String phone) {
+        if (String.isBlank(phone)) {
+            return '';
+        }
+        
+        String normalized = phone.replaceAll('[^0-9]', '');
+        return normalized != null ? normalized : '';
+    }
+    
 
-        final Double NAME_SIMILARITY_THRESHOLD = 0.78; // 78%
+    @TestVisible
+    private static String getMatchType(Integer score) {
+        if (score == 100) {
+            return DuplicateMatchConstants.MATCH_TYPE_EMAIL;
+        } else if (score == 70) {
+            return DuplicateMatchConstants.MATCH_TYPE_FUZZY_NAME_PHONE;
+        } else if (score == 50) {
+            return DuplicateMatchConstants.MATCH_TYPE_LASTNAME_PHONE;
+        }
+        return 'No Match';
+    }
+    
+    @TestVisible
+    private static String createPairKey(Id customerA, Id customerB) {
+        if (customerA == null || customerB == null) {
+            return null;
+        }
+        
+        String idA = String.valueOf(customerA);
+        String idB = String.valueOf(customerB);
+        
+        return idA < idB ? idA + '|' + idB : idB + '|' + idA;
+    }
+    
+    public static Integer levenshteinDistance(String stringA, String stringB) {
+        if (String.isBlank(stringA)) return String.isBlank(stringB) ? 0 : stringB.length();
+        if (String.isBlank(stringB)) return stringA.length();
+        
+        Integer lenA = stringA.length();
+        Integer lenB = stringB.length();
+        
+        List<List<Integer>> matrix = new List<List<Integer>>();
 
-        for (String ph : byPhone.keySet()) {
-            List<Customer__c> bucket = byPhone.get(ph);
-            if (bucket == null || bucket.size() < 2) continue;
-
-            for (Integer i = 0; i < bucket.size(); i++) {
-                for (Integer j = i + 1; j < bucket.size(); j++) {
-                    Customer__c a = bucket[i], b = bucket[j];
-                    String key = pairKey(a != null ? a.Id : null, b != null ? b.Id : null);
-                    if (key == null || seenPairs.contains(key)) continue;
-
-                    Boolean sameLast = !String.isBlank(a.LastName__c)
-                        && !String.isBlank(b.LastName__c)
-                        && a.LastName__c.trim().toLowerCase() == b.LastName__c.trim().toLowerCase();
-
-                    if (sameLast) {
-                        seenPairs.add(key);
-                        out.add(createDuplicateRecord(
-                            a, b,
-                            DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE,
-                            DuplicateMatchConstants.MATCH_TYPE_LASTNAME_PHONE
-                        ));
-                        continue;
-                    }
-
-                    Double sim = nameSimilarity(a.FirstName__c, b.FirstName__c);
-                    if (sim >= NAME_SIMILARITY_THRESHOLD) {
-                        seenPairs.add(key);
-                        out.add(createDuplicateRecord(
-                            a, b,
-                            DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE,
-                            DuplicateMatchConstants.MATCH_TYPE_FUZZY_NAME_PHONE
-                        ));
-                    }
+        for (Integer i = 0; i <= lenA; i++) {
+            matrix.add(new List<Integer>());
+            for (Integer j = 0; j <= lenB; j++) {
+                if (i == 0) {
+                    matrix[i].add(j);
+                } else if (j == 0) {
+                    matrix[i].add(i);
+                } else {
+                    matrix[i].add(0);
                 }
             }
         }
-    }
-
-
-    @TestVisible
-    private String normalizeEmail(String raw) {
-        if (String.isBlank(raw)) return null;
-        String s = sanitizeInput(raw).trim().toLowerCase();
-        return s;
-    }
-
-    @TestVisible
-    private String normalizePhone(String raw) {
-        if (String.isBlank(raw)) return null;
-        String onlyDigits = '';
-        for (Integer i = 0; i < raw.length(); i++) {
-            String ch = String.valueOf(raw.charAt(i));
-            if (ch >= '0' && ch <= '9') onlyDigits += ch;
-        }
-
-        return String.isBlank(onlyDigits) ? null : onlyDigits;
-    }
-
-    @TestVisible
-    private Double nameSimilarity(String a, String b) {
-        if (String.isBlank(a) || String.isBlank(b)) return 0.0;
-        String s1 = a.trim().toLowerCase();
-        String s2 = b.trim().toLowerCase();
-        if (s1 == s2) return 1.0;
-
-        Integer dist = levenshteinDistance(s1, s2);
-        Integer maxLen = Math.max(s1.length(), s2.length());
-        if (maxLen == 0) return 1.0;
-
-        return 1.0 - ((Double) dist) / maxLen;
-    }
-
-    @TestVisible
-    public Integer levenshteinDistance(String a, String b) {
-        Integer n = a == null ? 0 : a.length();
-        Integer m = b == null ? 0 : b.length();
-        if (n == 0) return m;
-        if (m == 0) return n;
-
-        List<Integer> prev = new List<Integer>();
-        for (Integer j = 0; j <= m; j++) prev.add(j);
-
-        for (Integer i = 1; i <= n; i++) {
-            List<Integer> curr = new List<Integer>();
-            curr.add(i);
-            for (Integer j = 1; j <= m; j++) {
-                Integer cost = (a.charAt(i - 1) == b.charAt(j - 1)) ? 0 : 1;
-                Integer ins = curr.get(j - 1) + 1;
-                Integer del = prev.get(j) + 1;
-                Integer sub = prev.get(j - 1) + cost;
-                curr.add(Math.min(ins, Math.min(del, sub)));
+    
+        for (Integer i = 1; i <= lenA; i++) {
+            for (Integer j = 1; j <= lenB; j++) {
+                Integer cost = stringA.charAt(i-1) == stringB.charAt(j-1) ? 0 : 1;
+                
+                Integer deletion = matrix[i-1][j] + 1;
+                Integer insertion = matrix[i][j-1] + 1;
+                Integer substitution = matrix[i-1][j-1] + cost;
+                
+                matrix[i][j] = Math.min(deletion, Math.min(insertion, substitution));
             }
-            prev = new List<Integer>(curr);
         }
-        return prev.get(m);
-    }
-
-    @TestVisible
-    private Duplicate_Match__c createDuplicateRecord(Customer__c a, Customer__c b, Integer score, String typeLabel) {
-        return new Duplicate_Match__c(
-            Customer_A__c = a != null ? a.Id : null,
-            Customer_B__c = b != null ? b.Id : null,
-            Match_Score__c = score,
-            Match_Type__c = typeLabel,
-            Status__c = DuplicateMatchConstants.STATUS_PENDING
-        );
-    }
-
-    @TestVisible
-    private static String pairKey(Id a, Id b) {
-        if (a == null || b == null) return null;
-        String sa = String.valueOf(a), sb = String.valueOf(b);
-        return (sa < sb) ? (sa + '|' + sb) : (sb + '|' + sa);
+        
+        return matrix[lenA][lenB];
     }
 }
