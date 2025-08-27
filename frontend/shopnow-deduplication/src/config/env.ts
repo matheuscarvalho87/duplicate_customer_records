@@ -15,10 +15,7 @@ export const ENV = {
 };
 
 export const apiBase = (() => {
-  if (import.meta.env.DEV && ENV.DEV_PROXY_PATH) {
-    return `${ENV.DEV_PROXY_PATH}${ENV.SF_API_PREFIX}`;
-  }
-  return `${ENV.SF_BASE_URL}${ENV.SF_API_PREFIX}`;
+  return ENV.SF_BASE_URL;
 })();
 
 export const tokenEndpoint = (() => {

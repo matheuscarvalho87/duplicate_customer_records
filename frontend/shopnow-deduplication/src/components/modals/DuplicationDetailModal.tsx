@@ -1,12 +1,13 @@
 import type { DuplicateMatch } from '@/types/DuplicateMatch';
 import CustomerCard from '../CustomerCard';
+import { X } from 'lucide-react';
 
 interface DuplicateDetailModalProps {
   duplicate: DuplicateMatch | null;
   onClose: () => void;
 }
 
-export function DuplicateDetailModal({ duplicate, onClose }: DuplicateDetailModalProps) {
+export default function DuplicateDetailModal({ duplicate, onClose }: DuplicateDetailModalProps) {
   if (!duplicate) return null;
 
   return (
@@ -19,9 +20,7 @@ export function DuplicateDetailModal({ duplicate, onClose }: DuplicateDetailModa
             className="text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Close modal"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-6 h-6" />
           </button>
         </div>
         
@@ -66,26 +65,6 @@ export function DuplicateDetailModal({ duplicate, onClose }: DuplicateDetailModa
                 showDifferences={true}
                 variant="detailed"
               />
-            </div>
-          </div>
-          <div className="border-t border-gray-200 pt-6">
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Close
-              </button>
-              {duplicate.status === 'Pending Review' && (
-                <>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                    Ignore
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                    Merge
-                  </button>
-                </>
-              )}
             </div>
           </div>
         </div>

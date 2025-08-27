@@ -59,7 +59,7 @@ export const duplicateService = {
   },
 
   async getPendingSimple(): Promise<DuplicateMatch[]> {
-    const result = await this.getPending({ limit: 1000 }); // Get large batch
+    const result = await this.getPending({ limit: 1000 });
     return result.duplicates;
   },
 
@@ -71,30 +71,6 @@ export const duplicateService = {
       });
     } catch (error) {
       console.error(`Error resolving duplicate ${id} with action ${action}:`, error);
-      throw error;
-    }
-  },
-
-  async bulkResolve(ids: string[], action: "merge" | "ignore"): Promise<void> {
-    try {
-      await http.post('/services/apexrest/duplicates/bulk-resolve', { 
-        ids,
-        action 
-      });
-    } catch (error) {
-      console.error(`Error bulk resolving duplicates with action ${action}:`, error);
-      throw error;
-    }
-  },
-
-  async getById(id: string): Promise<DuplicateMatch> {
-    try {
-      const { data } = await http.get<DuplicateMatch>(
-        `/services/apexrest/duplicates/${encodeURIComponent(id)}`
-      );
-      return data;
-    } catch (error) {
-      console.error(`Error fetching duplicate ${id}:`, error);
       throw error;
     }
   }
