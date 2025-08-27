@@ -93,7 +93,7 @@ public abstract with sharing class BaseAPI extends BaseService {
         String low = v.toLowerCase();
         if (!allowed.contains(low)) {
             badRequest('Invalid value for "' + name + '"', new Map<String,Object>{ 'param' => name, 'allowed' => allowed });
-            throw new AuraHandledException('Invalid parameter: ' + name);
+            throw new CalloutException('Invalid parameter: ' + name);
         }
         return low;
     }

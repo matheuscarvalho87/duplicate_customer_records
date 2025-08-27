@@ -18,4 +18,5 @@ public with sharing class DuplicateMatchConstants {
     // Batch Processing
     public static final Integer BATCH_SIZE = 200;
     public static final Integer MAX_DUPLICATE_PAIRS = 10000;
+    public static final Integer MAX_BULK_IDS = 200;
 }

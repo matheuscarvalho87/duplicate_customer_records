@@ -118,13 +118,13 @@ global with sharing class DuplicateManagementAPI extends BaseAPI {
             }
         };
 
-        performanceMetrics.put('api.pending.limit', pageLimit);
-        performanceMetrics.put('api.pending.offset', pageOffset);
-        performanceMetrics.put('api.pending.minScore', minScore);
-        performanceMetrics.put('api.pending.sinceDays', sinceDays);
-        performanceMetrics.put('api.pending.rows', rows.size());
-        performanceMetrics.put('api.pending.total', total);
-        performanceMetrics.put('api.pending.timeMs', System.currentTimeMillis() - t0);
+        setMetric('api.pending.limit', pageLimit);
+        setMetric('api.pending.offset', pageOffset);
+        setMetric('api.pending.minScore', minScore);
+        setMetric('api.pending.sinceDays', sinceDays);
+        setMetric('api.pending.rows', rows.size());
+        setMetric('api.pending.total', total);
+        setMetric('api.pending.timeMs', System.currentTimeMillis() - t0);
 
         AppLogger.debug('GET /duplicates/pending OK (selector)', buildCtx());
         ok(payload);
@@ -133,47 +133,115 @@ global with sharing class DuplicateManagementAPI extends BaseAPI {
 
     @HttpPost
     global static void resolve() {
+        try {
+            SecurityUtil.validateAccess('ShopNow_Deduplication_Access');
+
+            String path = (RestContext.request != null && RestContext.request.requestURI != null)
+                ? RestContext.request.requestURI.toLowerCase() : '';
+            if (path.endsWith('/bulk-resolve')) {
+                handleBulkResolve();
+            } else {
+                sendError(RestContext.response, 404, 'Not Found', 'Use /duplicates/bulk-resolve.');
+            }
+        } catch (SecurityException se) {
+            AppLogger.warn('Security violation in GET /duplicates/bulk-resolve', buildCtx());
+            sendError(RestContext.response, 403, 'Forbidden', se.getMessage());
+        } catch (QueryException qe) {
+            AppLogger.error('QueryException in GET /duplicates/bulk-resolve', qe, buildCtx());
+            sendError(RestContext.response, 403, 'Forbidden', qe.getMessage());
+        } catch (Exception e) {
+            AppLogger.error('Unexpected in GET /duplicates/bulk-resolve', e, buildCtx());
+            sendError(RestContext.response, 500, 'Internal Server Error', e.getMessage());
+        } 
+    }
+
+    @TestVisible
+    private static void handleBulkResolve() {
         RestRequest req = RestContext.request;
         RestResponse res = RestContext.response;
 
         try {
             SecurityUtil.validateAccess('ShopNow_Deduplication_Access');
 
-            Id matchId = extractMatchId(req.requestURI);
-            if (matchId == null) { sendError(res, 400, 'Bad Request', 'Use /duplicates/{id}/resolve'); return; }
-
             Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(req.requestBody.toString());
-            String action = (body != null && body.containsKey('action')) ? String.valueOf(body.get('action')) : null;
+            
+            if (body == null) {
+                sendError(res, 400, 'Bad Request', 'Request body is required.');
+                return;
+            }
 
-            if (String.isBlank(action)) { sendError(res, 400, 'Bad Request', 'action é obrigatório (merge|ignore).'); return; }
+            List<Object> idsObj = (List<Object>) body.get('ids');
+            String action = (String) body.get('action');
 
-            DuplicateResolutionService svc = new DuplicateResolutionService();
-            svc.resolve(matchId, action);
+            if (idsObj == null || idsObj.isEmpty()) {
+                sendError(res, 400, 'Bad Request', 'ids array is required and cannot be empty.');
+                return;
+            }
 
-            Map<String, Object> ok = new Map<String, Object>{
-                'status' => 'ok', 'action' => action.toLowerCase(), 'matchId' => matchId
+            if (String.isBlank(action)) {
+                sendError(res, 400, 'Bad Request', 'action is required (merge|ignore).');
+                return;
+            }
+
+            action = action.toLowerCase();
+            if (action != 'merge' && action != 'ignore') {
+                sendError(res, 400, 'Bad Request', 'Invalid action. Use "merge" or "ignore".');
+                return;
+            }
+
+            List<String> ids = new List<String>();
+            for (Object idObj : idsObj) {
+                String idStr = String.valueOf(idObj);
+                try {
+                    Id.valueOf(idStr);
+                    ids.add(idStr);
+                } catch (Exception e) {
+                    sendError(res, 400, 'Bad Request', 'Invalid ID format: ' + idStr);
+                    return;
+                }
+            }
+
+    
+            if (ids.size() > DuplicateMatchConstants.MAX_BULK_IDS) {
+                sendError(res, 400, 'Bad Request', 
+                    String.format('Too many IDs. Maximum allowed: {0}', 
+                        new List<String>{String.valueOf(DuplicateMatchConstants.MAX_BULK_IDS)}));
+                return;
+            }
+
+            DuplicateResolutionService bulkService = new DuplicateResolutionService();
+            DuplicateResolutionService.BulkResolutionResult result = bulkService.bulkResolve(ids, action);
+
+            Map<String, Object> response = new Map<String, Object>{
+                'status' => 'completed',
+                'action' => action,
+                'requested' => ids.size(),
+                'successful' => result.successCount,
+                'failed' => result.failureCount,
+                'errors' => result.errors
             };
-            res.statusCode = 200;
-            res.responseBody = Blob.valueOf(JSON.serialize(ok));
 
-            AppLogger.info('Duplicate resolved', new Map<String,Object>{
-                'matchId' => matchId, 'action' => action
+            res.statusCode = result.hasErrors() ? 207 : 200;
+            res.responseBody = Blob.valueOf(JSON.serialize(response));
+
+            String logMessage = String.format('Bulk {0}: {1}/{2} successful', 
+                new List<String>{action, String.valueOf(result.successCount), String.valueOf(ids.size())});
+            
+            AppLogger.info('Bulk resolve completed', new Map<String,Object>{
+                'action' => action,
+                'requested' => ids.size(),
+                'successful' => result.successCount,
+                'failed' => result.failureCount
             });
 
         } catch (SecurityException se) {
-            AppLogger.warn('Security violation in POST /resolve', buildCtx());
+            AppLogger.warn('Security violation in POST /duplicates/bulk-resolve', buildCtx());
             sendError(res, 403, 'Forbidden', se.getMessage());
-        } catch (QueryException qe) {
-            AppLogger.error('Not Found in POST /resolve', qe, buildCtx());
-            sendError(res, 404, 'Not Found', 'Duplicate_Match__c não encontrado.');
-        } catch (AuraHandledException ahe) {
-            AppLogger.warn('Business guard in POST /resolve', new Map<String,Object>{ 'msg' => ahe.getMessage() });
-            sendError(res, 400, 'Bad Request', ahe.getMessage());
-        } catch (DmlException dml) {
-            AppLogger.error('DML error in POST /resolve', dml, buildCtx());
-            sendError(res, 400, 'Bad Request', dml.getMessage());
+        } catch (JsonException je) {
+            AppLogger.error('JSON parsing error in POST /duplicates/bulk-resolve', je, buildCtx());
+            sendError(res, 400, 'Bad Request', 'Invalid JSON in request body.');
         } catch (Exception e) {
-            AppLogger.error('Unexpected in POST /resolve (outer)', e, buildCtx());
+            AppLogger.error('Unexpected error in POST /duplicates/bulk-resolve', e, buildCtx());
             sendError(res, 500, 'Internal Server Error', e.getMessage());
         }
     }

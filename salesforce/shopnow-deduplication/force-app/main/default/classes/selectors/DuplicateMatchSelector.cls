@@ -6,6 +6,8 @@ public with sharing class DuplicateMatchSelector {
         'Customer_B__c, Customer_B__r.FirstName__c, Customer_B__r.LastName__c, ' +
         'Customer_B__r.Email__c, Customer_B__r.Phone__c';
 
+    private static final String RESOLVE_FIELDS =
+        'Id, Status__c, Match_Score__c, Customer_A__c, Customer_B__c';
 
     public class PendingFilter {
         public Decimal  minScore;
@@ -30,14 +32,13 @@ public with sharing class DuplicateMatchSelector {
     }
 
     public static List<Duplicate_Match__c> selectPending(PendingFilter f) {
-        if (f == null) throw new AuraHandledException('Filter required');
+        if (f == null) throw new CalloutException('Filter required');
 
         String order = (f.sortOrder == 'ASC') ? 'ASC' : 'DESC';
 
         Set<String> allowedOrderBy = new Set<String>{ 'Match_Score__c', 'CreatedDate' };
         String orderBy = (String.isBlank(f.sortField) || !allowedOrderBy.contains(f.sortField))
             ? 'CreatedDate' : f.sortField;
-
 
         Decimal  minScore   = f.minScore;
         Datetime startDate  = f.startDate;
@@ -68,6 +69,34 @@ public with sharing class DuplicateMatchSelector {
             'read'
         );
 
+        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, rows);
+        return (List<Duplicate_Match__c>) dec.getRecords();
+    }
+
+    public static List<Duplicate_Match__c> selectByIdsForResolve(List<Id> matchIds) {
+        if (matchIds == null || matchIds.isEmpty()) {
+           throw new CalloutException('Match IDs list cannot be null or empty');
+        }
+
+        if (matchIds.size() > DuplicateMatchConstants.MAX_BULK_IDS) {
+            throw new CalloutException(String.format('Too many IDs for bulk operation. Maximum allowed: {0}', 
+                    new List<String>{String.valueOf(DuplicateMatchConstants.MAX_BULK_IDS)}));
+        }
+
+        SecurityUtil.checkCRUD(Duplicate_Match__c.SObjectType, 'read');
+        SecurityUtil.checkFLS(
+            Duplicate_Match__c.SObjectType,
+            new Set<String>{ 'Status__c', 'Match_Score__c', 'Customer_A__c', 'Customer_B__c' },
+            'read'
+        );
+
+        String soql =
+            'SELECT ' + RESOLVE_FIELDS + ' ' +
+            'FROM Duplicate_Match__c ' +
+            'WHERE Id IN :matchIds ' +
+            'FOR UPDATE';
+
+        List<Duplicate_Match__c> rows = Database.query(soql);
 
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, rows);
         return (List<Duplicate_Match__c>) dec.getRecords();

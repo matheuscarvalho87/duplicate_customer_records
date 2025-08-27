@@ -47,13 +47,6 @@ private class DuplicateManagementAPITest {
         return req;
     }
 
-    private static RestRequest makePostResolveReq(Id matchId, String jsonBody) {
-        RestRequest req = new RestRequest();
-        req.requestUri  = '/services/apexrest/duplicates/' + String.valueOf(matchId) + '/resolve';
-        req.httpMethod  = 'POST';
-        req.requestBody = Blob.valueOf(jsonBody == null ? '{}' : jsonBody);
-        return req;
-    }
 
     private static Integer toInt(Object v) { return Integer.valueOf(String.valueOf(v)); }
 
@@ -136,27 +129,6 @@ private class DuplicateManagementAPITest {
 
         Test.startTest();
         DuplicateManagementAPI.get();
-        Test.stopTest();
-
-        System.assertEquals(403, RestContext.response.statusCode, 'Expected 403 Forbidden');
-        String body = RestContext.response.responseBody == null ? '' : RestContext.response.responseBody.toString();
-        Map<String, Object> err = (Map<String, Object>) JSON.deserializeUntyped(body);
-        System.assertEquals('Forbidden', String.valueOf(err.get('message')));
-        System.assert(err.containsKey('details'), 'Error payload must include "details"');
-    }
-
-    @IsTest
-    static void post_resolve_router_403_forbidden_error_shape() {
-        List<Customer__c> aList = seedCustomers(1, 'AX');
-        List<Customer__c> bList = seedCustomers(1, 'BX');
-        List<Duplicate_Match__c> matches = seedPendingMatches(aList, bList, new List<Integer>{ 80 });
-        Id matchId = matches[0].Id;
-
-        RestContext.request  = makePostResolveReq(matchId, '{"action":"ignore"}');
-        RestContext.response = new RestResponse();
-
-        Test.startTest();
-        DuplicateManagementAPI.resolve();
         Test.stopTest();
 
         System.assertEquals(403, RestContext.response.statusCode, 'Expected 403 Forbidden');
