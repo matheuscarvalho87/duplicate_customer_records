@@ -70,5 +70,32 @@ export default defineConfig(({ mode }) => {
           : {}),
       },
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup/setup.ts'],
+      css: true,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html'],
+        exclude: [
+          'node_modules/',
+          'src/test/',
+          '**/*.d.ts',
+          '**/*.config.*',
+          'src/main.tsx',
+          'src/types/**',
+          'src/assets/**',
+        ],
+        thresholds: {
+          global: {
+            branches: 80,
+            functions: 85,
+            lines: 85,
+            statements: 85
+          }
+        }
+      },
+    }
   };
 });

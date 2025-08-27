@@ -8,4 +8,5 @@ export type DuplicateMatch = {
   customerB: Customer;
   score: number;   
   status: DuplicateStatus;
+  createdAt: string;
 };

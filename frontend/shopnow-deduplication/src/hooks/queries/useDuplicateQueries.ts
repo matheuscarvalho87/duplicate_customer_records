@@ -11,6 +11,14 @@ interface DuplicateListParams {
   order?: 'asc' | 'desc';
 }
 
+type ResolveAction = 'merge' | 'ignore';
+
+type MutationCtx = {
+  previousListQueries: Array<[unknown, unknown]>;
+  previousDetail: DuplicateMatch | undefined;
+  detailKey: unknown;
+};
+
 export function useDuplicates(params?: DuplicateListParams) {
   return useQuery({
     queryKey: queryKeys.duplicates.pending(params),
@@ -34,45 +42,50 @@ export function useResolveDuplicate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: 'merge' | 'ignore' }) =>
+    mutationFn: ({ id, action }: { id: string; action: ResolveAction }) =>
       duplicateService.resolve(id, action),
-    
-    onMutate: async ({ id, action }) => {
+
+    onMutate: async ({ id, action }): Promise<MutationCtx> => {
       await queryClient.cancelQueries({ queryKey: queryKeys.duplicates.all });
 
-      const previousDuplicates = queryClient.getQueriesData({ 
-        queryKey: queryKeys.duplicates.lists() 
+      const listQueries = queryClient.getQueriesData({
+        predicate: q =>
+          Array.isArray(q.queryKey) &&
+          (q.queryKey as any[])[0] === 'duplicates' &&
+          ((q.queryKey as any[]).includes('pending') ||
+           (q.queryKey as any[]).includes('list') ||
+           (q.queryKey as any[]).includes('lists')),
       });
 
-      queryClient.setQueriesData(
-        { queryKey: queryKeys.duplicates.lists() },
-        (oldData: any) => {
-          if (!oldData?.duplicates) return oldData;
-          
-          return {
-            ...oldData,
-            duplicates: oldData.duplicates.filter((dup: DuplicateMatch) => dup.id !== id)
-          };
+      const previousListQueries = listQueries.map(([key, data]) => [key, data] as [unknown, unknown]);
+
+      listQueries.forEach(([key, oldData]) => {
+        const d = oldData as any;
+        if (d && Array.isArray(d.duplicates)) {
+          queryClient.setQueryData(key, {
+            ...d,
+            duplicates: d.duplicates.filter((x: DuplicateMatch) => x.id !== id),
+          });
         }
+      });
+
+      const detailKey = queryKeys.duplicates.detail(id);
+      const previousDetail = queryClient.getQueryData<DuplicateMatch>(detailKey);
+
+      queryClient.setQueryData(detailKey, (old: DuplicateMatch | undefined) =>
+        old ? { ...old, status: action === 'merge' ? 'Merged' : 'Ignored' } : old
       );
 
-      queryClient.setQueryData(
-        queryKeys.duplicates.detail(id),
-        (oldData: DuplicateMatch | undefined) => 
-          oldData ? { 
-            ...oldData, 
-            status: action === 'merge' ? 'Merged' : 'Ignored' 
-          } : undefined
-      );
-
-      return { previousDuplicates };
+      return { previousListQueries, previousDetail, detailKey };
     },
 
-    onError: (error, variables, context) => {
-      if (context?.previousDuplicates) {
-        context.previousDuplicates.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
+    onError: (_err, _vars, ctx) => {
+      if (!ctx) return;
+      ctx.previousListQueries.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      if (ctx.previousDetail !== undefined) {
+        queryClient.setQueryData(ctx.detailKey, ctx.previousDetail);
       }
     },
 

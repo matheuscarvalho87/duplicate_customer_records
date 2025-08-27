@@ -5,4 +5,5 @@ export type Customer = {
   email?: string;   
   phone?: string;  
   signupDate?: string;
-};
+  isDeleted?: boolean;
+}
