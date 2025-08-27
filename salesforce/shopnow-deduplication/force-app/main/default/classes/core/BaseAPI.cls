@@ -54,14 +54,14 @@ public abstract with sharing class BaseAPI extends BaseService {
         RestContext.response.responseBody = Blob.valueOf(JSON.serialize(err));
     }
 
-    protected String q(String name, String dft) {
+    protected String validateQuery(String name, String dft) {
         String v = RestContext.request != null ? RestContext.request.params.get(name) : null;
         return (v == null || v.trim().length() == 0) ? dft : v;
     }
 
     protected Integer validateQueryInteger(String name, Integer dft, Integer minVal, Integer maxVal) {
         try {
-            String raw = q(name, null);
+            String raw = validateQuery(name, null);
             if (raw == null) return dft;
             Integer val = Integer.valueOf(raw);
             if (minVal != null && val < minVal) val = minVal;
@@ -75,7 +75,7 @@ public abstract with sharing class BaseAPI extends BaseService {
 
     protected Decimal validateQueryDecimal(String name, Decimal dft, Decimal minVal, Decimal maxVal) {
         try {
-            String raw = q(name, null);
+            String raw = validateQuery(name, null);
             if (raw == null) return dft;
             Decimal val = Decimal.valueOf(raw);
             if (minVal != null && val < minVal) val = minVal;
@@ -88,7 +88,7 @@ public abstract with sharing class BaseAPI extends BaseService {
     }
 
     protected String qAllowed(String name, String dft, Set<String> allowed) {
-        String v = q(name, dft);
+        String v = validateQuery(name, dft);
         if (v == null) return dft;
         String low = v.toLowerCase();
         if (!allowed.contains(low)) {
