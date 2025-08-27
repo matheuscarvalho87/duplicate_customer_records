@@ -3,10 +3,11 @@ import type { DuplicateMatch } from "../types/DuplicateMatch";
 import type { Pagination } from "../types/Pagination";
 
 interface SalesforcePagedResponse<T> {
-  page: {
+  pagination: {
     total: number;
     offset: number;
     limit: number;
+    hasMore: boolean;
   };
   items: T[];
 }
@@ -47,9 +48,10 @@ export const duplicateService = {
       return {
         duplicates: data.items || [],
         pagination: {
-          page: Math.floor(data.page.offset / data.page.limit) + 1,
-          pageSize: data.page.limit,
-          total: data.page.total
+          page: Math.floor(data.pagination.offset / data.pagination.limit) + 1,
+          pageSize: data.pagination.limit,
+          total: data.pagination.total,
+          hasMore: data.pagination.hasMore
         }
       };
     } catch (error) {

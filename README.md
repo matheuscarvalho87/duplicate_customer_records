@@ -307,10 +307,11 @@ Retrieve pending duplicate matches with pagination and filtering support.
       }
     }
   ],
-  "page": {
-    "limit": 50,
-    "offset": 0,
-    "total": 127
+  "pagination": {
+    "hasMore": false,
+		"total": 2,
+		"offset": 0,
+		"limit": 10
   }
 }
 ```
