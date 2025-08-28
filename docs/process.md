@@ -6,7 +6,6 @@
 ## Challenges
 * Undestanding the Salesforce data model
 * Understanding the Salesforce CLI (sf)
-* Understanding the Salesforce Apex language
 * Understanding how modules work in Salesforce
 * Understanding data relationships in Salesforce
 * Understanding permissions in Salesforce
@@ -15,6 +14,8 @@
 * understanding how to create a custom object in Salesforce
 * understanding APEX, class, triggers, anonymous scripts
 * understanding tests in Salesforce
+* validate performance issues, Salesforce has limits for CPU time, number of queries, number of records processed, etc
+
 ## Util commands for SF
   ### See all connected orgs
   sf org list
@@ -51,7 +52,26 @@
   SELECT Id, Customer_A__c, Customer_B__c, Match_Score__c, Match_Type__c, Status__c
   FROM Duplicate_Match__c
   ORDER BY CreatedDate DESC
- 
+
+  ### API Requests
+  * Get pending duplicate matches (example with curl)
+  curl --request GET \
+  --url 'https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com/services/apexrest/duplicates/pending?limit=10&offset=0&minScore=50&sort=score&order=desc' \
+  --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --cookie 'CookieConsentPolicy=0%3A1; LSKey-c%24CookieConsentPolicy=0%3A1; BrowserId=D6sgPoB0EfC_UJFbNXukfw'
+
+ ### Populate test data in APEX Developer Console
+ ```
+ // (1) Opcional: cleanup first
+DataFactory.cleanupTestData();
+
+// (2) Create test data (40 customers, 20 duplicate matches)
+DataFactory.Result r = DataFactory.createTestData(40);
+
+// (3) Log results
+System.debug(LoggingLevel.INFO, JSON.serializePretty(r)); 
+```
 ## Problems logs
 * Salesforce account is not working
 

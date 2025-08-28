@@ -15,7 +15,7 @@ public with sharing class DataFactory {
         SecurityUtil.checkCRUD(Customer__c.SObjectType, 'create');
         SecurityUtil.checkFLS(
             Customer__c.SObjectType,
-            new Set<String>{'FirstName__c','LastName__c','Email__c','Phone__c'},
+            new Set<String>{'FirstName__c','LastName__c','Email__c','Phone__c','IsDeleted__c'},
             'create'
         );
 
@@ -38,7 +38,8 @@ public with sharing class DataFactory {
                 FirstName__c = baseFirst,
                 LastName__c  = baseLast,
                 Email__c     = email,
-                Phone__c     = phone
+                Phone__c     = phone,
+                IsDeleted__c = false
             ));
         }
 
@@ -106,6 +107,7 @@ public with sharing class DataFactory {
         for (Duplicate_Match__c m : ms) r.matchIds.add(m.Id);
         return r;
     }
+
 
     public static void cleanupTestData() {
         List<Duplicate_Match__c> matches = [

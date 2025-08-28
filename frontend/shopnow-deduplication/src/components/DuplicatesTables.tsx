@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronUp, ChevronDown, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { DuplicateMatch } from '../types/DuplicateMatch';
 
 interface DuplicatesTableProps {
@@ -26,18 +26,6 @@ interface SortConfig {
   direction: 'asc' | 'desc';
 }
 
-interface FilterConfig {
-  minScore: number;
-  maxScore: number;
-  status: string;
-}
-
-const DEFAULT_FILTER: FilterConfig = {
-  minScore: 0,
-  maxScore: 100,
-  status: 'all'
-};
-
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export default function DuplicatesTable({
@@ -49,22 +37,16 @@ export default function DuplicatesTable({
   currentPage = 1,
   pageSize = 10,
   totalPages = 1,
-  totalCount = 0, // <<< Novo
+  totalCount = 0,
   onPageChange,
   onPageSizeChange
 }: DuplicatesTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'score', direction: 'desc' });
-  const [filterConfig, setFilterConfig] = useState<FilterConfig>(DEFAULT_FILTER);
-  const [showFilters, setShowFilters] = useState(false);
 
-  const processedData = useMemo(() => {
-    let filtered = duplicates.filter(item => {
-      const scoreInRange = item.score >= filterConfig.minScore && item.score <= filterConfig.maxScore;
-      const statusMatch = filterConfig.status === 'all' || item.status === filterConfig.status;
-      return scoreInRange && statusMatch;
-    });
+  const sortedPageData = useMemo(() => {
+    const pageCopy = [...duplicates];
 
-    filtered.sort((a, b) => {
+    pageCopy.sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
@@ -100,18 +82,14 @@ export default function DuplicatesTable({
       return 0;
     });
 
-    return filtered;
-  }, [duplicates, sortConfig, filterConfig]);
+    return pageCopy;
+  }, [duplicates, sortConfig]);
 
   const handleSort = useCallback((key: SortConfig['key']) => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
-  }, []);
-
-  const clearFilters = useCallback(() => {
-    setFilterConfig(DEFAULT_FILTER);
   }, []);
 
   const SortButton = ({ column }: { column: SortConfig['key'] }) => (
@@ -130,11 +108,32 @@ export default function DuplicatesTable({
   );
 
   const PaginationControls = () => {
-    const startItem = (currentPage - 1) * pageSize + 1;
-    const endItem = Math.min(currentPage * pageSize, totalCount);
+    const safeTotal = Math.max(0, Number.isFinite(totalCount) ? totalCount : 0);
+    const safePageSize = Math.max(1, Number.isFinite(pageSize) ? pageSize : 10);
+    const safeCurrent = Math.max(1, Number.isFinite(currentPage) ? currentPage : 1);
+    const safeTotalPages = Math.max(1, Number.isFinite(totalPages) ? totalPages : 1);
 
-    const hasNextPage = currentPage < totalPages;
-    const hasPreviousPage = currentPage > 1;
+    const startItem = safeTotal === 0 ? 0 : (safeCurrent - 1) * safePageSize + 1;
+    const endItem = Math.min(safeCurrent * safePageSize, safeTotal);
+
+    const hasNextPage = safeCurrent < safeTotalPages;
+    const hasPreviousPage = safeCurrent > 1;
+
+    const handlePageSizeChange = (newSize: number) => {
+      onPageSizeChange?.(newSize);
+      onPageChange?.(1);
+    };
+    const visibleCount = Math.min(safeTotalPages, 5);
+    const pages: number[] = [];
+    if (safeTotalPages <= 5) {
+      for (let i = 1; i <= safeTotalPages; i++) pages.push(i);
+    } else if (safeCurrent <= 3) {
+      for (let i = 1; i <= 5; i++) pages.push(i);
+    } else if (safeCurrent >= safeTotalPages - 2) {
+      for (let i = safeTotalPages - 4; i <= safeTotalPages; i++) pages.push(i);
+    } else {
+      for (let i = safeCurrent - 2; i <= safeCurrent + 2; i++) pages.push(i);
+    }
 
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
@@ -142,9 +141,10 @@ export default function DuplicatesTable({
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">Show</span>
             <select
-              value={pageSize}
-              onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+              value={safePageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
               className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={loading}
             >
               {PAGE_SIZE_OPTIONS.map(size => (
                 <option key={size} value={size}>{size}</option>
@@ -154,13 +154,15 @@ export default function DuplicatesTable({
           </div>
 
           <div className="text-sm text-gray-700">
-            Showing {startItem} to {endItem} of {totalCount} results
+            {safeTotal === 0
+              ? 'No results'
+              : <>Showing {startItem} to {endItem} of {safeTotal} results</>}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onPageChange?.(currentPage - 1)}
+            onClick={() => onPageChange?.(safeCurrent - 1)}
             disabled={!hasPreviousPage || loading}
             className="inline-flex items-center px-2 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Previous page"
@@ -169,37 +171,24 @@ export default function DuplicatesTable({
           </button>
 
           <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => onPageChange?.(pageNum)}
-                  disabled={loading}
-                  className={`inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors ${
-                    currentPage === pageNum
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+            {pages.map(pageNum => (
+              <button
+                key={pageNum}
+                onClick={() => onPageChange?.(pageNum)}
+                disabled={loading}
+                className={`inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors ${
+                  safeCurrent === pageNum
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
           </div>
 
           <button
-            onClick={() => onPageChange?.(currentPage + 1)}
+            onClick={() => onPageChange?.(safeCurrent + 1)}
             disabled={!hasNextPage || loading}
             className="inline-flex items-center px-2 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Next page"
@@ -222,86 +211,15 @@ export default function DuplicatesTable({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">                                                  
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      {/* Header */}
       <div className="border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900">
-            Duplicate Matches ({processedData.length})
+            Duplicate Matches{typeof totalCount === 'number' ? ` (${totalCount})` : ''}
           </h3>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
         </div>
-
-        {showFilters && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="minScore" className="block text-sm font-medium text-gray-700 mb-1">
-                  Min Score
-                </label>
-                <input
-                  id="minScore"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={filterConfig.minScore}
-                  onChange={(e) => setFilterConfig(prev => ({ ...prev, minScore: Number(e.target.value) }))}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="maxScore" className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Score
-                </label>
-                <input
-                  id="maxScore"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={filterConfig.maxScore}
-                  onChange={(e) => setFilterConfig(prev => ({ ...prev, maxScore: Number(e.target.value) }))}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  id="status"
-                  value={filterConfig.status}
-                  onChange={(e) => setFilterConfig(prev => ({ ...prev, status: e.target.value }))}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="Pending Review">Pending Review</option>
-                  <option value="Merged">Merged</option>
-                  <option value="Ignored">Ignored</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                <X className="w-4 h-4" />
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        )}
       </div>
-
-  
       <div className="grid grid-cols-1 md:grid-cols-5 gap-5 px-5 py-3 bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm">
         <div className="flex items-center gap-1">
           Customer A
@@ -321,15 +239,13 @@ export default function DuplicatesTable({
         </div>
         <div className="text-right pr-2">Actions</div>
       </div>
-
-      {/* Rows */}
       <div className="divide-y divide-gray-200">
-        {processedData.length === 0 ? (
+        {sortedPageData.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-gray-500">
             No duplicate matches found
           </div>
         ) : (
-          processedData.map((item) => (
+          sortedPageData.map((item) => (
             <div
               key={item.id}
               className="grid grid-cols-1 md:grid-cols-5 gap-8 px-5 py-5 hover:bg-gray-50 transition-colors"
@@ -405,8 +321,7 @@ export default function DuplicatesTable({
         )}
       </div>
 
-      {/* Pagination */}
-      {processedData.length > 0 && <PaginationControls />}
+      {sortedPageData.length > 0 && <PaginationControls />}
     </div>
   );
 }
