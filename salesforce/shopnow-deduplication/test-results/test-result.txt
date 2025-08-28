@@ -1,60 +1,64 @@
 === Apex Code Coverage for Test Run 
-TEST NAME                                                             CLASS BEING TESTED          OUTCOME  PERCENT  MESSAGE  RUNTIME (MS)
-────────────────────────────────────────────────────────────────────  ──────────────────────────  ───────  ───────  ───────  ────────────
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchSelector      Pass     50%               338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        SecurityUtil                Pass     67%               338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchRepository    Pass     20%               338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        AppLogger                   Pass     36%               338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchConstants     Pass     100%              338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateResolutionService  Pass     47%               338         
-DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        BaseService                 Pass     11%               338         
-DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchRepository    Pass     18%               169         
-DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateResolutionService  Pass     12%               169         
-DuplicateResolutionServiceTest.testGetTotalCount                      BaseService                 Pass     8%                169         
-DuplicateResolutionServiceTest.testGetTotalCount                      SecurityUtil                Pass     28%               169         
-DuplicateResolutionServiceTest.testGetTotalCount                      AppLogger                   Pass     36%               169         
-DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchConstants     Pass     100%              169         
-DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchSelector      Pass     33%               169         
-DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateResolutionService  Pass     26%               111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             BaseService                 Pass     25%               111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchConstants     Pass     100%              111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             SecurityUtil                Pass     67%               111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             AppLogger                   Pass     36%               111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchSelector      Pass     42%               111         
-DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchRepository    Pass     31%               111         
-DuplicateResolutionServiceTest.testResolve_invalidAction              AppLogger                   Pass     56%               151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchRepository    Pass     23%               151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchSelector      Pass     42%               151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              BaseService                 Pass     14%               151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              SecurityUtil                Pass     67%               151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchConstants     Pass     100%              151         
-DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateResolutionService  Pass     24%               151         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  AppLogger                   Pass     42%               156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchConstants     Pass     100%              156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateResolutionService  Pass     29%               156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  BaseService                 Pass     26%               156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchSelector      Pass     42%               156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  SecurityUtil                Pass     67%               156         
-DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchRepository    Pass     46%               156         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchConstants     Pass     100%              113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        SecurityUtil                Pass     67%               113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchSelector      Pass     42%               113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateResolutionService  Pass     22%               113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        AppLogger                   Pass     61%               113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchRepository    Pass     24%               113         
-DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        BaseService                 Pass     16%               113         
+TEST NAME                                            CLASS BEING TESTED          OUTCOME  PERCENT  MESSAGE  RUNTIME (MS)
+───────────────────────────────────────────────────  ──────────────────────────  ───────  ───────  ───────  ────────────
+DuplicateManagementAPITest.testGetPendingDuplicates  DuplicateResolutionService  Pass     53%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  BaseService                 Pass     11%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  DuplicateMatchSelector      Pass     71%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  BaseAPI                     Pass     61%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  SecurityUtil                Pass     67%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  DuplicateMatchRepository    Pass     27%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  AppLogger                   Pass     36%               570         
+DuplicateManagementAPITest.testGetPendingDuplicates  DuplicateManagementAPI      Pass     34%               570         
+DuplicateManagementAPITest.testIgnoreAction          DuplicateManagementAPI      Pass     46%               179         
+DuplicateManagementAPITest.testIgnoreAction          DuplicateMatchSelector      Pass     42%               179         
+DuplicateManagementAPITest.testIgnoreAction          BaseService                 Pass     25%               179         
+DuplicateManagementAPITest.testIgnoreAction          DuplicateMatchRepository    Pass     31%               179         
+DuplicateManagementAPITest.testIgnoreAction          AppLogger                   Pass     36%               179         
+DuplicateManagementAPITest.testIgnoreAction          SecurityUtil                Pass     67%               179         
+DuplicateManagementAPITest.testIgnoreAction          BaseAPI                     Pass     22%               179         
+DuplicateManagementAPITest.testIgnoreAction          DuplicateMatchConstants     Pass     100%              179         
+DuplicateManagementAPITest.testIgnoreAction          DuplicateResolutionService  Pass     26%               179         
+DuplicateManagementAPITest.testInvalidId             SecurityUtil                Pass     21%               137         
+DuplicateManagementAPITest.testInvalidId             DuplicateManagementAPI      Pass     35%               137         
+DuplicateManagementAPITest.testInvalidId             BaseService                 Pass     8%                137         
+DuplicateManagementAPITest.testInvalidId             DuplicateMatchRepository    Pass     13%               137         
+DuplicateManagementAPITest.testInvalidId             DuplicateMatchConstants     Pass     0%                137         
+DuplicateManagementAPITest.testInvalidId             BaseAPI                     Pass     32%               137         
+DuplicateManagementAPITest.testInvalidId             DuplicateMatchSelector      Pass     13%               137         
+DuplicateManagementAPITest.testInvalidId             DuplicateResolutionService  Pass     8%                137         
+DuplicateManagementAPITest.testInvalidId             AppLogger                   Pass     36%               137         
+DuplicateManagementAPITest.testMergeAction           SecurityUtil                Pass     67%               317         
+DuplicateManagementAPITest.testMergeAction           BaseAPI                     Pass     24%               317         
+DuplicateManagementAPITest.testMergeAction           DuplicateMatchRepository    Pass     46%               317         
+DuplicateManagementAPITest.testMergeAction           DuplicateMatchConstants     Pass     100%              317         
+DuplicateManagementAPITest.testMergeAction           DuplicateResolutionService  Pass     29%               317         
+DuplicateManagementAPITest.testMergeAction           BaseService                 Pass     25%               317         
+DuplicateManagementAPITest.testMergeAction           DuplicateManagementAPI      Pass     47%               317         
+DuplicateManagementAPITest.testMergeAction           DuplicateMatchSelector      Pass     42%               317         
+DuplicateManagementAPITest.testMergeAction           AppLogger                   Pass     36%               317         
+DuplicateManagementAPITest.testPagination            DuplicateManagementAPI      Pass     39%               173         
+DuplicateManagementAPITest.testPagination            DuplicateMatchConstants     Pass     0%                173         
+DuplicateManagementAPITest.testPagination            BaseAPI                     Pass     63%               173         
+DuplicateManagementAPITest.testPagination            DuplicateMatchRepository    Pass     30%               173         
+DuplicateManagementAPITest.testPagination            SecurityUtil                Pass     67%               173         
+DuplicateManagementAPITest.testPagination            DuplicateMatchSelector      Pass     75%               173         
+DuplicateManagementAPITest.testPagination            AppLogger                   Pass     36%               173         
+DuplicateManagementAPITest.testPagination            BaseService                 Pass     13%               173         
+DuplicateManagementAPITest.testPagination            DuplicateResolutionService  Pass     55%               173         
 
 
 === Apex Code Coverage by Class
-CLASSES                     PERCENT  UNCOVERED LINES   
-──────────────────────────  ───────  ──────────────────
-DuplicateMatchConstants     100%                       
-SecurityUtil                67%      5,6,7,8,9,...     
-AppLogger                   61%      35,36,37,39,40,...
-BaseService                 30%      16,17,18,26,27,...
-DuplicateMatchSelector      96%      35                
-DuplicateResolutionService  86%      50,51,75,76,77,...
-DuplicateMatchRepository    68%      47,48,49,50,51,...
+CLASSES                     PERCENT  UNCOVERED LINES      
+──────────────────────────  ───────  ─────────────────────
+DuplicateMatchConstants     100%                          
+DuplicateManagementAPI      75%      64,65,104,105,106,...
+SecurityUtil                67%      5,6,7,8,9,...        
+AppLogger                   36%      15,16,23,30,32,...   
+BaseService                 25%      16,17,18,26,27,...   
+BaseAPI                     75%      16,17,18,27,29,...   
+DuplicateMatchSelector      96%      35                   
+DuplicateResolutionService  80%      51,74,75,76,77,...   
+DuplicateMatchRepository    61%      47,48,49,50,51,...   
 
 
 
@@ -63,14 +67,14 @@ DuplicateMatchRepository    68%      47,48,49,50,51,...
 NAME                 VALUE                               
 ───────────────────  ────────────────────────────────────
 Outcome              Passed                              
-Tests Ran            6                                   
+Tests Ran            5                                   
 Pass Rate            100%                                
 Fail Rate            0%                                  
 Skip Rate            0%                                  
 Test Run Id                                              
 Test Setup Time      0 ms                                
-Test Execution Time  1144 ms                             
-Test Total Time      1144 ms                             
+Test Execution Time  1549 ms                             
+Test Total Time      1549 ms                             
 Org Id               00DgL000008xvvJUAQ                  
 Username             matheus-carvalho87500@agentforce.com
-Org Wide Coverage    29%                                 
+Org Wide Coverage    38%                                 

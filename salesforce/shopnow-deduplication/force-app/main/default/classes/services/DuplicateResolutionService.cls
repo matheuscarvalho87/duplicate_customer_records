@@ -63,7 +63,6 @@ public with sharing class DuplicateResolutionService extends BaseService {
                 dtos.add(toDuplicateItemDTO(matchRecord));
             }
 
-            // Track performance metrics
             Long executionTime = System.currentTimeMillis() - startTime;
             setMetric('getPendingDtos_executionTime', executionTime);
             setMetric('getPendingDtos_recordCount', dtos.size());

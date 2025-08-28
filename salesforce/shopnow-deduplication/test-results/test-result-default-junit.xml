@@ -1,36 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-    <testsuite name="force.apex" timestamp="2025-08-28T22:45:42.395Z" hostname="https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com" tests="6" failures="0"  errors="0"  time="1.14">
+    <testsuite name="force.apex" timestamp="2025-08-28T22:59:20.448Z" hostname="https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com" tests="5" failures="0"  errors="0"  time="1.55">
         <properties>
             <property name="outcome" value="Successful"/>
-            <property name="testsRan" value="6"/>
-            <property name="passing" value="6"/>
+            <property name="testsRan" value="5"/>
+            <property name="passing" value="5"/>
             <property name="failing" value="0"/>
             <property name="skipped" value="0"/>
             <property name="passRate" value="100%"/>
             <property name="failRate" value="0%"/>
-            <property name="testStartTime" value="Thu Aug 28 2025 7:45:42 PM"/>
-            <property name="testExecutionTime" value="1.14 s"/>
-            <property name="testTotalTime" value="1.14 s"/>
+            <property name="testStartTime" value="Thu Aug 28 2025 7:59:20 PM"/>
+            <property name="testExecutionTime" value="1.55 s"/>
+            <property name="testTotalTime" value="1.55 s"/>
             <property name="commandTime" value="0.00 s"/>
             <property name="hostname" value="https://orgfarm-d26e890132-dev-ed.develop.my.salesforce.com"/>
             <property name="orgId" value="00DgL000008xvvJUAQ"/>
             <property name="username" value="matheus-carvalho87500@agentforce.com"/>
-            <property name="coveredLines" value="316"/>
-            <property name="testRunCoverage" value="56%"/>
-            <property name="orgWideCoverage" value="29%"/>
+            <property name="coveredLines" value="434"/>
+            <property name="testRunCoverage" value="57%"/>
+            <property name="orgWideCoverage" value="38%"/>
         </properties>
-        <testcase name="testGetPendingDtos_sortsAndMaps" classname="DuplicateResolutionServiceTest" time="0.34">
+        <testcase name="testGetPendingDuplicates" classname="DuplicateManagementAPITest" time="0.57">
         </testcase>
-        <testcase name="testGetTotalCount" classname="DuplicateResolutionServiceTest" time="0.17">
+        <testcase name="testIgnoreAction" classname="DuplicateManagementAPITest" time="0.18">
         </testcase>
-        <testcase name="testResolve_ignore_success" classname="DuplicateResolutionServiceTest" time="0.11">
+        <testcase name="testInvalidId" classname="DuplicateManagementAPITest" time="0.14">
         </testcase>
-        <testcase name="testResolve_invalidAction" classname="DuplicateResolutionServiceTest" time="0.15">
+        <testcase name="testMergeAction" classname="DuplicateManagementAPITest" time="0.32">
         </testcase>
-        <testcase name="testResolve_merge_success_softDeleteB" classname="DuplicateResolutionServiceTest" time="0.16">
-        </testcase>
-        <testcase name="testResolve_onlyPendingEnforced" classname="DuplicateResolutionServiceTest" time="0.11">
+        <testcase name="testPagination" classname="DuplicateManagementAPITest" time="0.17">
         </testcase>
     </testsuite>
 </testsuites>
