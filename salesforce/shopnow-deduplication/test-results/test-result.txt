@@ -1,119 +1,76 @@
-=== Apex Code Coverage for Test Run 707gL00000CFjj2
-TEST NAME                                                           CLASS BEING TESTED          OUTCOME  PERCENT  MESSAGE                                                                       RUNTIME (MS)
-──────────────────────────────────────────────────────────────────  ──────────────────────────  ───────  ───────  ────────────────────────────────────────────────────────────────────────────  ────────────
-DuplicateMatchingBatchTest.testBatchCreatesMatchesAndIsIdempotent   DuplicateMatchConstants     Pass     100%                                                                                   496         
-DuplicateMatchingBatchTest.testBatchCreatesMatchesAndIsIdempotent   FuzzyMatchingUtil           Pass     84%                                                                                    496         
-DuplicateMatchingBatchTest.testBatchCreatesMatchesAndIsIdempotent   DuplicateMatchingService    Pass     90%                                                                                    496         
-DuplicateMatchingBatchTest.testBatchCreatesMatchesAndIsIdempotent   DuplicateMatchingBatch      Pass     87%                                                                                    496         
-DuplicateMatchingBatchTest.testFinishSendsSummaryAndBatchCompletes  DuplicateMatchingBatch      Pass     83%                                                                                    162         
-DuplicateMatchingBatchTest.testFinishSendsSummaryAndBatchCompletes  FuzzyMatchingUtil           Pass     84%                                                                                    162         
-DuplicateMatchingBatchTest.testFinishSendsSummaryAndBatchCompletes  DuplicateMatchConstants     Pass     100%                                                                                   162         
-DuplicateMatchingBatchTest.testFinishSendsSummaryAndBatchCompletes  DuplicateMatchingService    Pass     90%                                                                                    162         
-DuplicateMatchingBatchTest.testStartWithSpecificIdsBranch           DuplicateMatchingService    Pass     80%                                                                                    183         
-DuplicateMatchingBatchTest.testStartWithSpecificIdsBranch           FuzzyMatchingUtil           Pass     84%                                                                                    183         
-DuplicateMatchingBatchTest.testStartWithSpecificIdsBranch           DuplicateMatchingBatch      Pass     83%                                                                                    183         
-DuplicateMatchingBatchTest.testStartWithSpecificIdsBranch           DuplicateMatchConstants     Pass     100%                                                                                   183         
-SecurityUtilTest.testCheckCRUD_read_ok                              SecurityUtil                Pass     23%                                                                                    79          
-SecurityUtilTest.testCheckFLS_invalidField_throws                   SecurityUtil                Pass     21%                                                                                    15          
-SecurityUtilTest.testCheckFLS_read_ok                               SecurityUtil                Pass     35%                                                                                    11          
-SecurityUtilTest.testSanitizeInput_and_Sort                         SecurityUtil                Pass     33%                                                                                    12          
-SecurityUtilTest.testValidateAccess_enforced_throws                 SecurityUtil                Pass     26%                                                                                    21          
-SecurityUtilTest.testValidateAccess_softMode_noException            SecurityUtil                Pass     19%                                                                                    11          
-DuplicateMatchingSchedulerTest.testScheduleHourlyAndRun             DuplicateMatchingBatch      Pass     46%                                                                                    447         
-DuplicateMatchingSchedulerTest.testScheduleHourlyAndRun             DuplicateMatchingScheduler  Pass     19%                                                                                    447         
-DuplicateMatchingSchedulerTest.testSchedulerEnqueuesBatch           DuplicateMatchingBatch      Pass     46%                                                                                    312         
-DuplicateMatchingSchedulerTest.testSchedulerEnqueuesBatch           DuplicateMatchingScheduler  Pass     13%                                                                                    312         
-FuzzyMatchingUtilTest.testCalculateSimilarityClose                  FuzzyMatchingUtil           Pass     68%                                                                                    75          
-FuzzyMatchingUtilTest.testCalculateSimilarityClose                  DuplicateMatchingService    Pass     21%                                                                                    75          
-FuzzyMatchingUtilTest.testCalculateSimilarityClose                  DuplicateMatchConstants     Pass     100%                                                                                   75          
-FuzzyMatchingUtilTest.testCalculateSimilarityEmpty                  DuplicateMatchingService    Pass     1%                                                                                     10          
-FuzzyMatchingUtilTest.testCalculateSimilarityEmpty                  DuplicateMatchConstants     Pass     0%                                                                                     10          
-FuzzyMatchingUtilTest.testCalculateSimilarityEmpty                  FuzzyMatchingUtil           Pass     16%                                                                                    10          
-FuzzyMatchingUtilTest.testCalculateSimilarityExact                  FuzzyMatchingUtil           Pass     55%                                                                                    10          
-FuzzyMatchingUtilTest.testCalculateSimilarityExact                  DuplicateMatchingService    Pass     1%                                                                                     10          
-FuzzyMatchingUtilTest.testCalculateSimilarityExact                  DuplicateMatchConstants     Pass     0%                                                                                     10          
-FuzzyMatchingUtilTest.testNormalizeString                           DuplicateMatchingService    Pass     1%                                                                                     9           
-FuzzyMatchingUtilTest.testNormalizeString                           DuplicateMatchConstants     Pass     0%                                                                                     9           
-FuzzyMatchingUtilTest.testNormalizeString                           FuzzyMatchingUtil           Pass     47%                                                                                    9           
-FuzzyMatchingUtilTest.testPhoneNumberMatch                          DuplicateMatchingService    Pass     1%                                                                                     10          
-FuzzyMatchingUtilTest.testPhoneNumberMatch                          FuzzyMatchingUtil           Pass     24%                                                                                    10          
-FuzzyMatchingUtilTest.testPhoneNumberMatch                          DuplicateMatchConstants     Pass     0%                                                                                     10          
-FuzzyMatchingUtilTest.testTokenize                                  FuzzyMatchingUtil           Pass     66%                                                                                    10          
-FuzzyMatchingUtilTest.testTokenize                                  DuplicateMatchingService    Pass     1%                                                                                     10          
-FuzzyMatchingUtilTest.testTokenize                                  DuplicateMatchConstants     Pass     0%                                                                                     10          
-DuplicateManagementAPITest.testGetPendingDuplicates                 DuplicateManagementAPI      Fail     8%       System.AssertException: Assertion Failed: Expected: 200, Actual: 404          
-                                                                                                                  Class.DuplicateManagementAPITest.testGetPendingDuplicates: line 55, column 1  162         
-DuplicateManagementAPITest.testGetPendingDuplicates                 SecurityUtil                Fail     9%       System.AssertException: Assertion Failed: Expected: 200, Actual: 404          
-                                                                                                                  Class.DuplicateManagementAPITest.testGetPendingDuplicates: line 55, column 1  162         
-DuplicateManagementAPITest.testIgnoreAction                         DuplicateManagementAPI      Pass     25%                                                                                    178         
-DuplicateManagementAPITest.testIgnoreAction                         SecurityUtil                Pass     60%                                                                                    178         
-DuplicateManagementAPITest.testIgnoreAction                         AppLogger                   Pass     31%                                                                                    178         
-DuplicateManagementAPITest.testInvalidId                            AppLogger                   Pass     47%                                                                                    101         
-DuplicateManagementAPITest.testInvalidId                            SecurityUtil                Pass     60%                                                                                    101         
-DuplicateManagementAPITest.testInvalidId                            DuplicateManagementAPI      Pass     25%                                                                                    101         
-DuplicateManagementAPITest.testMergeAction                          DuplicateManagementAPI      Fail     30%      System.AssertException: Assertion Failed: Expected: 200, Actual: 400          
-                                                                                                                  Class.DuplicateManagementAPITest.testMergeAction: line 106, column 1          1638        
-DuplicateManagementAPITest.testMergeAction                          SecurityUtil                Fail     60%      System.AssertException: Assertion Failed: Expected: 200, Actual: 400          
-                                                                                                                  Class.DuplicateManagementAPITest.testMergeAction: line 106, column 1          1638        
-DuplicateManagementAPITest.testMergeAction                          AppLogger                   Fail     47%      System.AssertException: Assertion Failed: Expected: 200, Actual: 400          
-                                                                                                                  Class.DuplicateManagementAPITest.testMergeAction: line 106, column 1          1638        
-DuplicateManagementAPITest.testPagination                           DuplicateManagementAPI      Fail     10%      System.AssertException: Assertion Failed: Expected: 200, Actual: 404          
-                                                                                                                  Class.DuplicateManagementAPITest.testPagination: line 79, column 1            75          
-DuplicateManagementAPITest.testPagination                           AppLogger                   Fail     17%      System.AssertException: Assertion Failed: Expected: 200, Actual: 404          
-                                                                                                                  Class.DuplicateManagementAPITest.testPagination: line 79, column 1            75          
-DuplicateManagementAPITest.testPagination                           SecurityUtil                Fail     14%      System.AssertException: Assertion Failed: Expected: 200, Actual: 404          
-                                                                                                                  Class.DuplicateManagementAPITest.testPagination: line 79, column 1            75          
-DuplicateManagementAPITest.testUnauthorized                         AppLogger                   Pass     53%                                                                                    801         
-DuplicateManagementAPITest.testUnauthorized                         SecurityUtil                Pass     44%                                                                                    801         
-DuplicateManagementAPITest.testUnauthorized                         DuplicateManagementAPI      Pass     26%                                                                                    801         
-DuplicateMatchingServiceTest.testBulkProcessing                     DuplicateMatchingService    Pass     22%                                                                                    68          
-DuplicateMatchingServiceTest.testExactEmailMatch                    DuplicateMatchingService    Pass     36%                                                                                    8           
-DuplicateMatchingServiceTest.testExactEmailMatch                    DuplicateMatchConstants     Pass     100%                                                                                   8           
-DuplicateMatchingServiceTest.testFuzzyNameWithPhone                 FuzzyMatchingUtil           Pass     84%                                                                                    7           
-DuplicateMatchingServiceTest.testFuzzyNameWithPhone                 DuplicateMatchingService    Pass     79%                                                                                    7           
-DuplicateMatchingServiceTest.testFuzzyNameWithPhone                 DuplicateMatchConstants     Pass     100%                                                                                   7           
-DuplicateMatchingServiceTest.testGovernorLimits                     FuzzyMatchingUtil           Pass     84%                                                                                    8           
-DuplicateMatchingServiceTest.testGovernorLimits                     DuplicateMatchingService    Pass     79%                                                                                    8           
-DuplicateMatchingServiceTest.testGovernorLimits                     DuplicateMatchConstants     Pass     100%                                                                                   8           
-DuplicateMatchingServiceTest.testLastNameWithPhone                  DuplicateMatchingService    Pass     85%                                                                                    5           
-DuplicateMatchingServiceTest.testLastNameWithPhone                  FuzzyMatchingUtil           Pass     84%                                                                                    5           
-DuplicateMatchingServiceTest.testLastNameWithPhone                  DuplicateMatchConstants     Pass     100%                                                                                   5           
-DuplicateMatchingServiceTest.testNoMatch                            DuplicateMatchingService    Pass     28%                                                                                    3           
-DuplicateMatchingServiceTest.testNoMatch                            FuzzyMatchingUtil           Pass     11%                                                                                    3           
-DuplicateMatchingServiceTest.testNoMatch                            DuplicateMatchConstants     Pass     0%                                                                                     3           
+=== Apex Code Coverage for Test Run 
+TEST NAME                                                             CLASS BEING TESTED          OUTCOME  PERCENT  MESSAGE  RUNTIME (MS)
+────────────────────────────────────────────────────────────────────  ──────────────────────────  ───────  ───────  ───────  ────────────
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchSelector      Pass     50%               338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        SecurityUtil                Pass     67%               338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchRepository    Pass     20%               338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        AppLogger                   Pass     36%               338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateMatchConstants     Pass     100%              338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        DuplicateResolutionService  Pass     47%               338         
+DuplicateResolutionServiceTest.testGetPendingDtos_sortsAndMaps        BaseService                 Pass     11%               338         
+DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchRepository    Pass     18%               169         
+DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateResolutionService  Pass     12%               169         
+DuplicateResolutionServiceTest.testGetTotalCount                      BaseService                 Pass     8%                169         
+DuplicateResolutionServiceTest.testGetTotalCount                      SecurityUtil                Pass     28%               169         
+DuplicateResolutionServiceTest.testGetTotalCount                      AppLogger                   Pass     36%               169         
+DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchConstants     Pass     100%              169         
+DuplicateResolutionServiceTest.testGetTotalCount                      DuplicateMatchSelector      Pass     33%               169         
+DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateResolutionService  Pass     26%               111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             BaseService                 Pass     25%               111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchConstants     Pass     100%              111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             SecurityUtil                Pass     67%               111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             AppLogger                   Pass     36%               111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchSelector      Pass     42%               111         
+DuplicateResolutionServiceTest.testResolve_ignore_success             DuplicateMatchRepository    Pass     31%               111         
+DuplicateResolutionServiceTest.testResolve_invalidAction              AppLogger                   Pass     56%               151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchRepository    Pass     23%               151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchSelector      Pass     42%               151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              BaseService                 Pass     14%               151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              SecurityUtil                Pass     67%               151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateMatchConstants     Pass     100%              151         
+DuplicateResolutionServiceTest.testResolve_invalidAction              DuplicateResolutionService  Pass     24%               151         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  AppLogger                   Pass     42%               156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchConstants     Pass     100%              156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateResolutionService  Pass     29%               156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  BaseService                 Pass     26%               156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchSelector      Pass     42%               156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  SecurityUtil                Pass     67%               156         
+DuplicateResolutionServiceTest.testResolve_merge_success_softDeleteB  DuplicateMatchRepository    Pass     46%               156         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchConstants     Pass     100%              113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        SecurityUtil                Pass     67%               113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchSelector      Pass     42%               113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateResolutionService  Pass     22%               113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        AppLogger                   Pass     61%               113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        DuplicateMatchRepository    Pass     24%               113         
+DuplicateResolutionServiceTest.testResolve_onlyPendingEnforced        BaseService                 Pass     16%               113         
 
 
 === Apex Code Coverage by Class
-CLASSES                     PERCENT  UNCOVERED LINES    
-──────────────────────────  ───────  ───────────────────
-DuplicateMatchingService    95%      73,78,93,126,162   
-DuplicateMatchConstants     100%                        
-FuzzyMatchingUtil           100%                        
-DuplicateManagementAPI      55%      52,53,54,55,57,... 
-DuplicateMatchingScheduler  19%      7,9,10,11,12,...   
-DuplicateMatchingBatch      90%      79,80,82,91,108,...
-SecurityUtil                98%      42                 
-AppLogger                   56%      18,35,36,37,39,... 
+CLASSES                     PERCENT  UNCOVERED LINES   
+──────────────────────────  ───────  ──────────────────
+DuplicateMatchConstants     100%                       
+SecurityUtil                67%      5,6,7,8,9,...     
+AppLogger                   61%      35,36,37,39,40,...
+BaseService                 30%      16,17,18,26,27,...
+DuplicateMatchSelector      96%      35                
+DuplicateResolutionService  86%      50,51,75,76,77,...
+DuplicateMatchRepository    68%      47,48,49,50,51,...
 
 
-=== Test Setup Time by Test Class for Run 707gL00000CFjj2
-TEST SETUP METHOD NAME           SETUP TIME
-───────────────────────────────  ──────────
-DuplicateMatchingBatchTest.seed  85        
 
 
 === Test Summary
 NAME                 VALUE                               
 ───────────────────  ────────────────────────────────────
-Outcome              Failed                              
-Tests Ran            30                                  
-Pass Rate            90%                                 
-Fail Rate            10%                                 
+Outcome              Passed                              
+Tests Ran            6                                   
+Pass Rate            100%                                
+Fail Rate            0%                                  
 Skip Rate            0%                                  
-Test Run Id          707gL00000CFjj2                     
-Test Setup Time      85 ms                               
-Test Execution Time  4927 ms                             
-Test Total Time      5012 ms                             
+Test Run Id                                              
+Test Setup Time      0 ms                                
+Test Execution Time  1144 ms                             
+Test Total Time      1144 ms                             
 Org Id               00DgL000008xvvJUAQ                  
 Username             matheus-carvalho87500@agentforce.com
-Org Wide Coverage    74%                                 
+Org Wide Coverage    29%                                 
