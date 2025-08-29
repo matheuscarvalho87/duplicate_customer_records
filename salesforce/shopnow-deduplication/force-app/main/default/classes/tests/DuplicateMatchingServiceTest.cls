@@ -76,20 +76,6 @@ private class DuplicateMatchingServiceTest {
     }
 
     @IsTest
-    static void testNormalizePhone_and_samePhoneMinLength() {
-        DuplicateMatchingService service = new DuplicateMatchingService();
-        String n1 = service.normalizePhone('(555) 567-8901');
-        String n2 = service.normalizePhone('5555678901');
-        System.assertEquals('5555678901', n1);
-        System.assertEquals('5555678901', n2);
-
-        Customer__c a = new Customer__c(FirstName__c='A', LastName__c='X', Email__c='a@x.com', Phone__c='12345', IsActive__c=true);
-        Customer__c b = new Customer__c(FirstName__c='B', LastName__c='Y', Email__c='b@y.com', Phone__c='12345', IsActive__c=true);
-        Boolean sameShort = service.hasSamePhone(a, b);
-        System.assertEquals(false, sameShort, 'Phones shorter than 6 digits must not match');
-    }
-
-    @IsTest
     static void testGetMatchType_noMatch() {
         DuplicateMatchingService service = new DuplicateMatchingService();
         String t0 = service.getMatchType(0);

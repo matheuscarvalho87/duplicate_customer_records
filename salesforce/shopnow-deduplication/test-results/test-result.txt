@@ -1,60 +1,60 @@
 === Apex Code Coverage for Test Run 
-TEST NAME                                                               CLASS BEING TESTED        OUTCOME  PERCENT  MESSAGE  RUNTIME (MS)
-──────────────────────────────────────────────────────────────────────  ────────────────────────  ───────  ───────  ───────  ────────────
-DuplicateMatchingServiceTest.testCreatePairKey_nulls_and_ordering       DuplicateMatchingService  Pass     5%                213         
-DuplicateMatchingServiceTest.testCreatePairKey_nulls_and_ordering       BaseService               Pass     2%                213         
-DuplicateMatchingServiceTest.testExactEmailMatch                        DuplicateMatchingService  Pass     42%               51          
-DuplicateMatchingServiceTest.testExactEmailMatch                        AppLogger                 Pass     36%               51          
-DuplicateMatchingServiceTest.testExactEmailMatch                        BaseService               Pass     7%                51          
-DuplicateMatchingServiceTest.testExactEmailMatch                        DuplicateMatchConstants   Pass     100%              51          
-DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch            BaseService               Pass     7%                38          
-DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch            DuplicateMatchingService  Pass     62%               38          
-DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch            FuzzyMatchingUtil         Pass     88%               38          
-DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch            AppLogger                 Pass     36%               38          
-DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch            DuplicateMatchConstants   Pass     100%              38          
-DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone                 AppLogger                 Pass     36%               32          
-DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone                 DuplicateMatchConstants   Pass     100%              32          
-DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone                 BaseService               Pass     7%                32          
-DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone                 FuzzyMatchingUtil         Pass     88%               32          
-DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone                 DuplicateMatchingService  Pass     69%               32          
-DuplicateMatchingServiceTest.testGetMatchType_noMatch                   BaseService               Pass     3%                28          
-DuplicateMatchingServiceTest.testGetMatchType_noMatch                   AppLogger                 Pass     14%               28          
-DuplicateMatchingServiceTest.testGetMatchType_noMatch                   DuplicateMatchConstants   Pass     100%              28          
-DuplicateMatchingServiceTest.testGetMatchType_noMatch                   FuzzyMatchingUtil         Pass     9%                28          
-DuplicateMatchingServiceTest.testGetMatchType_noMatch                   DuplicateMatchingService  Pass     12%               28          
-DuplicateMatchingServiceTest.testLastNameWithSamePhone                  DuplicateMatchConstants   Pass     100%              32          
-DuplicateMatchingServiceTest.testLastNameWithSamePhone                  AppLogger                 Pass     36%               32          
-DuplicateMatchingServiceTest.testLastNameWithSamePhone                  BaseService               Pass     7%                32          
-DuplicateMatchingServiceTest.testLastNameWithSamePhone                  DuplicateMatchingService  Pass     73%               32          
-DuplicateMatchingServiceTest.testLastNameWithSamePhone                  FuzzyMatchingUtil         Pass     88%               32          
-DuplicateMatchingServiceTest.testLevenshteinDistance_paths              DuplicateMatchingService  Pass     22%               31          
-DuplicateMatchingServiceTest.testLevenshteinDistance_paths              DuplicateMatchConstants   Pass     0%                31          
-DuplicateMatchingServiceTest.testLevenshteinDistance_paths              FuzzyMatchingUtil         Pass     9%                31          
-DuplicateMatchingServiceTest.testLevenshteinDistance_paths              AppLogger                 Pass     14%               31          
-DuplicateMatchingServiceTest.testLevenshteinDistance_paths              BaseService               Pass     2%                31          
-DuplicateMatchingServiceTest.testNoDuplicates                           DuplicateMatchConstants   Pass     100%              30          
-DuplicateMatchingServiceTest.testNoDuplicates                           FuzzyMatchingUtil         Pass     88%               30          
-DuplicateMatchingServiceTest.testNoDuplicates                           BaseService               Pass     7%                30          
-DuplicateMatchingServiceTest.testNoDuplicates                           AppLogger                 Pass     36%               30          
-DuplicateMatchingServiceTest.testNoDuplicates                           DuplicateMatchingService  Pass     63%               30          
-DuplicateMatchingServiceTest.testNormalizePhone_and_samePhoneMinLength  AppLogger                 Pass     14%               31          
-DuplicateMatchingServiceTest.testNormalizePhone_and_samePhoneMinLength  DuplicateMatchingService  Pass     14%               31          
-DuplicateMatchingServiceTest.testNormalizePhone_and_samePhoneMinLength  FuzzyMatchingUtil         Pass     9%                31          
-DuplicateMatchingServiceTest.testNormalizePhone_and_samePhoneMinLength  DuplicateMatchConstants   Pass     0%                31          
-DuplicateMatchingServiceTest.testNormalizePhone_and_samePhoneMinLength  BaseService               Pass     3%                31          
-DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits           DuplicateMatchConstants   Pass     100%              33          
-DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits           DuplicateMatchingService  Pass     45%               33          
-DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits           AppLogger                 Pass     36%               33          
-DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits           BaseService               Pass     7%                33          
-DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits           FuzzyMatchingUtil         Pass     9%                33          
+TEST NAME                                                          CLASS BEING TESTED        OUTCOME  PERCENT  MESSAGE                                                                                 RUNTIME (MS)
+─────────────────────────────────────────────────────────────────  ────────────────────────  ───────  ───────  ──────────────────────────────────────────────────────────────────────────────────────  ────────────
+DuplicateMatchingServiceTest.testCreatePairKey_nulls_and_ordering  DuplicateMatchingService  Pass     4%                                                                                               161         
+DuplicateMatchingServiceTest.testCreatePairKey_nulls_and_ordering  BaseService               Pass     2%                                                                                               161         
+DuplicateMatchingServiceTest.testExactEmailMatch                   BaseService               Pass     7%                                                                                               39          
+DuplicateMatchingServiceTest.testExactEmailMatch                   DuplicateMatchingService  Pass     53%                                                                                              39          
+DuplicateMatchingServiceTest.testExactEmailMatch                   AppLogger                 Pass     36%                                                                                              39          
+DuplicateMatchingServiceTest.testExactEmailMatch                   DuplicateMatchConstants   Pass     100%                                                                                             39          
+DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch       AppLogger                 Pass     36%                                                                                              35          
+DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch       DuplicateMatchingService  Pass     67%                                                                                              35          
+DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch       FuzzyMatchingUtil         Pass     88%                                                                                              35          
+DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch       BaseService               Pass     7%                                                                                               35          
+DuplicateMatchingServiceTest.testFuzzyBelowThreshold_noMatch       DuplicateMatchConstants   Pass     100%                                                                                             35          
+DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone            DuplicateMatchingService  Pass     72%                                                                                              37          
+DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone            DuplicateMatchConstants   Pass     100%                                                                                             37          
+DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone            BaseService               Pass     7%                                                                                               37          
+DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone            AppLogger                 Pass     36%                                                                                              37          
+DuplicateMatchingServiceTest.testFuzzyNameWithSamePhone            FuzzyMatchingUtil         Pass     88%                                                                                              37          
+DuplicateMatchingServiceTest.testGetMatchType_noMatch              BaseService               Pass     3%                                                                                               22          
+DuplicateMatchingServiceTest.testGetMatchType_noMatch              DuplicateMatchingService  Pass     10%                                                                                              22          
+DuplicateMatchingServiceTest.testGetMatchType_noMatch              AppLogger                 Pass     14%                                                                                              22          
+DuplicateMatchingServiceTest.testGetMatchType_noMatch              DuplicateMatchConstants   Pass     100%                                                                                             22          
+DuplicateMatchingServiceTest.testGetMatchType_noMatch              FuzzyMatchingUtil         Pass     9%                                                                                               22          
+DuplicateMatchingServiceTest.testLastNameWithSamePhone             AppLogger                 Pass     36%                                                                                              38          
+DuplicateMatchingServiceTest.testLastNameWithSamePhone             DuplicateMatchingService  Pass     75%                                                                                              38          
+DuplicateMatchingServiceTest.testLastNameWithSamePhone             BaseService               Pass     7%                                                                                               38          
+DuplicateMatchingServiceTest.testLastNameWithSamePhone             DuplicateMatchConstants   Pass     100%                                                                                             38          
+DuplicateMatchingServiceTest.testLastNameWithSamePhone             FuzzyMatchingUtil         Pass     88%                                                                                              38          
+DuplicateMatchingServiceTest.testLevenshteinDistance_paths         DuplicateMatchConstants   Pass     0%                                                                                               29          
+DuplicateMatchingServiceTest.testLevenshteinDistance_paths         BaseService               Pass     2%                                                                                               29          
+DuplicateMatchingServiceTest.testLevenshteinDistance_paths         AppLogger                 Pass     14%                                                                                              29          
+DuplicateMatchingServiceTest.testLevenshteinDistance_paths         FuzzyMatchingUtil         Pass     9%                                                                                               29          
+DuplicateMatchingServiceTest.testLevenshteinDistance_paths         DuplicateMatchingService  Pass     17%                                                                                              29          
+DuplicateMatchingServiceTest.testNoDuplicates                      AppLogger                 Pass     36%                                                                                              28          
+DuplicateMatchingServiceTest.testNoDuplicates                      DuplicateMatchConstants   Pass     100%                                                                                             28          
+DuplicateMatchingServiceTest.testNoDuplicates                      FuzzyMatchingUtil         Pass     9%                                                                                               28          
+DuplicateMatchingServiceTest.testNoDuplicates                      BaseService               Pass     7%                                                                                               28          
+DuplicateMatchingServiceTest.testNoDuplicates                      DuplicateMatchingService  Pass     46%                                                                                              28          
+DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits      FuzzyMatchingUtil         Fail     75%      System.AssertException: Assertion Failed: One pair expected: Expected: 1, Actual: 2     
+                                                                                                               Class.DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits: line 73, column 1  38          
+DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits      DuplicateMatchConstants   Fail     100%     System.AssertException: Assertion Failed: One pair expected: Expected: 1, Actual: 2     
+                                                                                                               Class.DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits: line 73, column 1  38          
+DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits      DuplicateMatchingService  Fail     70%      System.AssertException: Assertion Failed: One pair expected: Expected: 1, Actual: 2     
+                                                                                                               Class.DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits: line 73, column 1  38          
+DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits      BaseService               Fail     7%       System.AssertException: Assertion Failed: One pair expected: Expected: 1, Actual: 2     
+                                                                                                               Class.DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits: line 73, column 1  38          
+DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits      AppLogger                 Fail     36%      System.AssertException: Assertion Failed: One pair expected: Expected: 1, Actual: 2     
+                                                                                                               Class.DuplicateMatchingServiceTest.testPerformanceAndGovernorLimits: line 73, column 1  38          
 
 
 === Apex Code Coverage by Class
 CLASSES                   PERCENT  UNCOVERED LINES   
 ────────────────────────  ───────  ──────────────────
-DuplicateMatchingService  81%      14,15,19,20,21,...
+DuplicateMatchingService  86%      19,20,24,25,26,...
 DuplicateMatchConstants   100%                       
-FuzzyMatchingUtil         88%      27,30,37,44       
+FuzzyMatchingUtil         91%      27,30,44          
 AppLogger                 36%      15,16,23,30,32,...
 BaseService               7%       12,13,14,15,16,...
 
@@ -64,15 +64,15 @@ BaseService               7%       12,13,14,15,16,...
 === Test Summary
 NAME                 VALUE                               
 ───────────────────  ────────────────────────────────────
-Outcome              Passed                              
-Tests Ran            10                                  
-Pass Rate            100%                                
-Fail Rate            0%                                  
+Outcome              Failed                              
+Tests Ran            9                                   
+Pass Rate            89%                                 
+Fail Rate            11%                                 
 Skip Rate            0%                                  
 Test Run Id                                              
 Test Setup Time      0 ms                                
-Test Execution Time  699 ms                              
-Test Total Time      699 ms                              
+Test Execution Time  555 ms                              
+Test Total Time      555 ms                              
 Org Id               00DgL000008xvvJUAQ                  
 Username             matheus-carvalho87500@agentforce.com
-Org Wide Coverage    16%                                 
+Org Wide Coverage    20%                                 
