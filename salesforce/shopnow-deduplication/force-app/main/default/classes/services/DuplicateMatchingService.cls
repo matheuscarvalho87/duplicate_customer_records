@@ -1,21 +1,57 @@
-public with sharing class DuplicateMatchingService {
+public with sharing class DuplicateMatchingService extends BaseService {
     
-    public static List<Duplicate_Match__c> findDuplicates(List<Customer__c> customers) {
-        if (customers == null || customers.isEmpty()) {
-            System.debug('DuplicateMatchingService: Empty customer list provided');
-            return new List<Duplicate_Match__c>();
-        }
+    protected override String getClassName() { 
+        return 'DuplicateMatchingService'; 
+    }
+    
+    public List<Duplicate_Match__c> findDuplicates(List<Customer__c> customers) {
+        logInfo('findDuplicates', 'Starting duplicate detection for ' + (customers != null ? customers.size() : 0) + ' customers');
         
+        Long startTime = System.currentTimeMillis();
+        
+        try {
+            if (customers == null || customers.isEmpty()) {
+                logWarning('findDuplicates', 'Empty customer list provided');
+                return new List<Duplicate_Match__c>();
+            }
+
+            if (customers.size() > DuplicateMatchConstants.MAX_DUPLICATE_PAIRS) {
+                String message = 'Customer list size (' + customers.size() + ') exceeds maximum allowed (' + 
+                               DuplicateMatchConstants.MAX_DUPLICATE_PAIRS + ')';
+                logError('findDuplicates', message, null);
+                throw new IllegalArgumentException(message);
+            }
+            List<Duplicate_Match__c> duplicateMatches = processCustomersForDuplicates(customers);
+            
+            Long executionTime = System.currentTimeMillis() - startTime;
+            setMetric('findDuplicates_executionTime', executionTime);
+            setMetric('findDuplicates_inputCount', customers.size());
+            setMetric('findDuplicates_outputCount', duplicateMatches.size());
+            
+            logInfo('findDuplicates', 'Found ' + duplicateMatches.size() + ' potential duplicates in ' + executionTime + 'ms');
+            return duplicateMatches;
+            
+        } catch (Exception e) {
+            Long executionTime = System.currentTimeMillis() - startTime;
+            logError('findDuplicates', 'Duplicate detection failed after ' + executionTime + 'ms', e);
+            throw e;
+        }
+    }
+
+    private List<Duplicate_Match__c> processCustomersForDuplicates(List<Customer__c> customers) {
         List<Duplicate_Match__c> duplicateMatches = new List<Duplicate_Match__c>();
         Set<String> processedPairs = new Set<String>();
+        Integer comparisons = 0;
+        Integer matches = 0;
+        
         for (Integer i = 0; i < customers.size(); i++) {
             for (Integer j = i + 1; j < customers.size(); j++) {
+                comparisons++;
+                
                 Customer__c customerA = customers[i];
                 Customer__c customerB = customers[j];
                 
-                if (customerA == null || customerB == null || 
-                    customerA.IsActive__c != true || customerB.IsActive__c != true ||
-                    customerA.IsDeleted__c == true || customerB.IsDeleted__c == true) {
+                if (!isValidCustomerForProcessing(customerA) || !isValidCustomerForProcessing(customerB)) {
                     continue;
                 }
                 
@@ -28,7 +64,8 @@ public with sharing class DuplicateMatchingService {
                 Integer matchScore = calculateMatchScore(customerA, customerB);
                 String matchType = getMatchType(matchScore);
                 
-                if (matchScore > 0) {
+                if (matchScore > DuplicateMatchConstants.NO_MATCH_SCORE) {
+                    matches++;
                     duplicateMatches.add(new Duplicate_Match__c(
                         Customer_A__c = customerA.Id,
                         Customer_B__c = customerB.Id,
@@ -40,31 +77,43 @@ public with sharing class DuplicateMatchingService {
             }
         }
         
-        System.debug('DuplicateMatchingService: Found ' + duplicateMatches.size() + ' potential duplicates');
+        setMetric('processCustomers_comparisons', comparisons);
+        setMetric('processCustomers_matches', matches);
+        setMetric('processCustomers_matchRate', comparisons > 0 ? (Decimal.valueOf(matches) / comparisons * 100).setScale(2) : 0);
+        
+        logDebug('processCustomersForDuplicates', 'Processed ' + comparisons + ' comparisons, found ' + matches + ' matches');
+        
         return duplicateMatches;
     }
     
     @TestVisible
-    private static Integer calculateMatchScore(Customer__c customerA, Customer__c customerB) {
-        
-        if (hasExactEmailMatch(customerA, customerB)) {
-            return DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE; // 100
+    private Integer calculateMatchScore(Customer__c customerA, Customer__c customerB) {
+        try {
+            if (hasExactEmailMatch(customerA, customerB)) {
+                logDebug('calculateMatchScore', 'Exact email match found between customers');
+                return DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE; // 100
+            }
+            
+            if (hasFuzzyNameMatch(customerA, customerB) && hasSamePhone(customerA, customerB)) {
+                logDebug('calculateMatchScore', 'Fuzzy name + phone match found between customers');
+                return DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE; // 70
+            }
+            
+            if (hasSameLastName(customerA, customerB) && hasSamePhone(customerA, customerB)) {
+                logDebug('calculateMatchScore', 'Same last name + phone match found between customers');
+                return DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE; // 50
+            }
+            
+            return DuplicateMatchConstants.NO_MATCH_SCORE;
+            
+        } catch (Exception e) {
+            logError('calculateMatchScore', 'Error calculating match score between customers', e);
+            return DuplicateMatchConstants.NO_MATCH_SCORE;
         }
-        
-        if (hasFuzzyNameMatch(customerA, customerB) && hasSamePhone(customerA, customerB)) {
-            return DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE; // 70
-        }
- 
-        if (hasSameLastName(customerA, customerB) && hasSamePhone(customerA, customerB)) {
-            return DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE; // 50
-        }
-        
-        return DuplicateMatchConstants.NO_MATCH_SCORE;
     }
-    
 
     @TestVisible
-    private static Boolean hasExactEmailMatch(Customer__c customerA, Customer__c customerB) {
+    private Boolean hasExactEmailMatch(Customer__c customerA, Customer__c customerB) {
         if (String.isBlank(customerA.Email__c) || String.isBlank(customerB.Email__c)) {
             return false;
         }
@@ -74,24 +123,28 @@ public with sharing class DuplicateMatchingService {
         
         return emailA.equals(emailB);
     }
-    
- 
+
     @TestVisible
-    private static Boolean hasFuzzyNameMatch(Customer__c customerA, Customer__c customerB) {
+    private Boolean hasFuzzyNameMatch(Customer__c customerA, Customer__c customerB) {
         if (String.isBlank(customerA.FirstName__c) || String.isBlank(customerB.FirstName__c)) {
             return false;
         }
         
-        Decimal similarity = FuzzyMatchingUtil.calculateSimilarity(
-            customerA.FirstName__c, 
-            customerB.FirstName__c
-        );
-        
-        return similarity >= DuplicateMatchConstants.FUZZY_MATCH_THRESHOLD; // 0.8 (80%)
+        try {
+            Decimal similarity = FuzzyMatchingUtil.calculateSimilarity(
+                customerA.FirstName__c, 
+                customerB.FirstName__c
+            );
+            
+            return similarity >= DuplicateMatchConstants.FUZZY_MATCH_THRESHOLD; // 0.8 (80%)
+        } catch (Exception e) {
+            logWarning('hasFuzzyNameMatch', 'Error calculating fuzzy match: ' + e.getMessage());
+            return false;
+        }
     }
-    
+
     @TestVisible
-    private static Boolean hasSameLastName(Customer__c customerA, Customer__c customerB) {
+    private Boolean hasSameLastName(Customer__c customerA, Customer__c customerB) {
         if (String.isBlank(customerA.LastName__c) || String.isBlank(customerB.LastName__c)) {
             return false;
         }
@@ -101,9 +154,9 @@ public with sharing class DuplicateMatchingService {
         
         return lastNameA.equals(lastNameB);
     }
-    
+
     @TestVisible
-    private static Boolean hasSamePhone(Customer__c customerA, Customer__c customerB) {
+    private Boolean hasSamePhone(Customer__c customerA, Customer__c customerB) {
         if (String.isBlank(customerA.Phone__c) || String.isBlank(customerB.Phone__c)) {
             return false;
         }
@@ -119,7 +172,7 @@ public with sharing class DuplicateMatchingService {
     }
 
     @TestVisible
-    private static String normalizePhone(String phone) {
+    private String normalizePhone(String phone) {
         if (String.isBlank(phone)) {
             return '';
         }
@@ -127,22 +180,21 @@ public with sharing class DuplicateMatchingService {
         String normalized = phone.replaceAll('[^0-9]', '');
         return normalized != null ? normalized : '';
     }
-    
 
     @TestVisible
-    private static String getMatchType(Integer score) {
-        if (score == 100) {
+    private String getMatchType(Integer score) {
+        if (score == DuplicateMatchConstants.EXACT_EMAIL_MATCH_SCORE) {
             return DuplicateMatchConstants.MATCH_TYPE_EMAIL;
-        } else if (score == 70) {
+        } else if (score == DuplicateMatchConstants.FUZZY_NAME_PHONE_MATCH_SCORE) {
             return DuplicateMatchConstants.MATCH_TYPE_FUZZY_NAME_PHONE;
-        } else if (score == 50) {
+        } else if (score == DuplicateMatchConstants.SAME_LASTNAME_PHONE_MATCH_SCORE) {
             return DuplicateMatchConstants.MATCH_TYPE_LASTNAME_PHONE;
         }
         return 'No Match';
     }
-    
+
     @TestVisible
-    private static String createPairKey(Id customerA, Id customerB) {
+    private String createPairKey(Id customerA, Id customerB) {
         if (customerA == null || customerB == null) {
             return null;
         }
@@ -152,7 +204,30 @@ public with sharing class DuplicateMatchingService {
         
         return idA < idB ? idA + '|' + idB : idB + '|' + idA;
     }
-    
+
+    private Boolean isValidCustomerForProcessing(Customer__c customer) {
+        if (customer == null) {
+            return false;
+        }
+        
+        if (customer.IsActive__c != true || customer.IsDeleted__c == true) {
+            return false;
+        }
+        
+        if (String.isBlank(customer.FirstName__c) && 
+            String.isBlank(customer.LastName__c) && 
+            String.isBlank(customer.Email__c) && 
+            String.isBlank(customer.Phone__c)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Levenshtein distance calculation for fuzzy matching
+     * Public static utility method for potential reuse
+     */
     public static Integer levenshteinDistance(String stringA, String stringB) {
         if (String.isBlank(stringA)) return String.isBlank(stringB) ? 0 : stringB.length();
         if (String.isBlank(stringB)) return stringA.length();

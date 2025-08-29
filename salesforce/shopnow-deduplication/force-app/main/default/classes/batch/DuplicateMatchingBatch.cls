@@ -1,5 +1,6 @@
 public with sharing class DuplicateMatchingBatch implements Database.Batchable<SObject>, Database.Stateful {
     
+    
     private Integer processedCustomers = 0;
     private Integer createdMatches = 0;
     private Integer skippedExisting = 0;
@@ -56,8 +57,10 @@ public with sharing class DuplicateMatchingBatch implements Database.Batchable<S
             }
             processedCustomers += customers.size();
 
+            DuplicateMatchingService duplicateMatchingService = new DuplicateMatchingService();
+
             System.debug('DuplicateMatchingBatch: Processing batch of ' + customers.size() + ' customers');
-            List<Duplicate_Match__c> potentialDuplicates = DuplicateMatchingService.findDuplicates(customers);
+            List<Duplicate_Match__c> potentialDuplicates = duplicateMatchingService.findDuplicates(customers);
             
             if (potentialDuplicates.isEmpty()) {
                 System.debug('DuplicateMatchingBatch: No duplicates found in this batch');
